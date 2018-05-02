@@ -6,7 +6,7 @@ pointArray = []
 # Create controller and set it up
 controller = Controller()
 print "calibrating..."
-controller.calibrate()
+controller.calibrateManual()
 print "finished!"
 controller.printPosition()
 

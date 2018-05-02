@@ -18,28 +18,44 @@ class Controller(object):
 		self.eps = eps
 
 	# Determines the plane of the paper in 3D space
-##	def calibrate(self):
-##		start = self.imageprocessor.getPoints()
-##
-##		# Calibrate surface normal
-##		self.bot.forward(0.5)
-##		curr = start
-##		while max(curr, key=lambda x: x[1])[1] < pmap.IMG_HEIGHT / 2:
-##			curr = p1, p2, p3 = self.imageprocessor.getPoints()
-##			self.pmap.addCalibration(p1, p2, p3)
-##		self.pmap.calibrateSurfaceNormal()
-##
-##		# Go back to starting position
-##		p1, p2, p3 = start
-##		self.pmap.setStartPosition(p1, p2, p3)
-##		start = self.pmap.surfaceMap(p1, p2, p3)
-##		self.gotoTarget(start)
-	
+	def calibrate(self):
+		start = self.imageprocessor.getPoints()
+		while start != None:
+			start = self.imageprocessor.getPoints()
+		p1i, p2i, p3i = start
+
+		# Calibrate surface normal
+		self.bot.forward(0.5)
+		curr = start
+		while max(curr, key=lambda x: x[1])[1] < pmap.IMG_HEIGHT / 2:
+			curr = self.imageprocessor.getPoints()
+			if curr == None:
+				continue
+
+			p1, p2, p3 = curr
+			self.pmap.addCalibration(p1, p2, p3)
+
+		# Set surface normal
+		self.pmap.calibrateSurfaceNormal()
+		self.pmap.initSurface(p1i, p2i, p3i)
+
+		# Go back to starting position
+		while curr == None:
+			curr = self.imageprocessor.getPoints()
+		p1, p2, p3 = curr
+		self.position, self.direction = self.pmap.surfaceMap(p1, p2, p3)
+
 	# Sets up the PMap module by determining the surface normal
 	# and sets the initial position and direction of the bot.
-	def calibrate(self):
+	# Calibrate without the bot.
+	def calibrateManual(self):
+		# Get start position
+		start = self.imageprocessor.getPoints()
+		while start != None:
+			start = self.imageprocessor.getPoints()
+		p1i, p2i, p3i = start
+
 		# Calibrate PMap by providing a sample of coordinates
-		p1i, p2i, p3i = self.imageprocessor.getPoints()
 		ts = time.time()
 		while time.time() - ts < 10:
 			pos = self.imageprocessor.getPoints()
@@ -67,3 +83,4 @@ class Controller(object):
 	# a distance of self.eps.
 	def gotoTarget(self, target):
 		# TODO: implement PID possibly to guide robot to target
+		pass
