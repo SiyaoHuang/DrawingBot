@@ -116,6 +116,10 @@ class PFunction(object):
 
 	# Finds the slope of the function at a certain point.
 	def slope(self, x):
+                prev = self.f(x)
+                nxt = self.f(x - self.eps)
+                if prev == None or nxt == None:
+                    return None
 		return (self.f(x) - self.f(x - self.eps)) / self.eps
 
 	# Finds the end of the function in a certain range and return 
@@ -137,7 +141,10 @@ class PFunction(object):
 		left, right = a, b
 		while right - left > self.eps:
 			middle = (left + right) / 2
-			if self.slope(middle) > 0:
+			smiddle = self.slope(middle)
+			if smiddle == None:
+                            return None
+			if smiddle > 0:
 				right = middle
 			else:
 				left = middle

@@ -11,7 +11,7 @@ import time
 class Controller(object):
 	def __init__(self, eps=0.1):
 		self.imageprocessor = ImageProcessor()
-		self.bot = Bot()
+		#self.bot = Bot()
 		self.pmap = PMap(epsx=0.001, epsy=0.01)
 		self.position = None
 		self.direction = None
@@ -51,20 +51,21 @@ class Controller(object):
 	def calibrateManual(self):
 		# Get start position
 		start = self.imageprocessor.getPoints()
-		while start != None:
+		while start == None:
 			start = self.imageprocessor.getPoints()
 		p1i, p2i, p3i = start
 
 		# Calibrate PMap by providing a sample of coordinates
 		ts = time.time()
 		while time.time() - ts < 10:
+                        print time.time() - ts
 			pos = self.imageprocessor.getPoints()
 			if pos == None:
 				continue
 			p1, p2, p3 = pos
 			self.pmap.addCalibration(p1, p2, p3)
 			time.sleep(.1)
-
+                    
 		# Set surface normal
 		self.pmap.calibrateSurfaceNormal()
 		self.pmap.initSurface(p1i, p2i, p3i)
@@ -75,7 +76,10 @@ class Controller(object):
 	# Continually prints out the 2D position of the bot on the surface.
 	def printPosition(self):
 		while True:
-			p1, p2, p3 = self.imageprocessor.getPoints()
+                        points = self.imageprocessor.getPoints()
+                        if points == None:
+                            continue
+			p1, p2, p3 = points
 			pos, d = self.pmap.surfaceMap(p1, p2, p3)
 			print str(pos), str(d)
 

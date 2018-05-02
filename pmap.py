@@ -146,6 +146,10 @@ class PMap(object):
 			trace = self.makeTraceFunc(i)
 			end = f.findEnd(0.0, DISTANCE_MAX)
 			m = f.findMin(0.0, end)
+			if m == None:
+                            continue
+                        if None in trace(m):
+                            continue
 			mins += [(f(m), trace(m))]
 
 		mins = filter(lambda x: x[0] < self.epsy, mins)
@@ -198,6 +202,13 @@ class PMap(object):
 		bin2 = 0
 		for i in range(len(bin2pts) - 1):
 			bin2 += abs((bin2pts[i] - bin2pts[i + 1]) * bin2norm)
+		
+		#print "bin1"
+                #for i in bin1pts:
+                #        print str(i)
+                #print "bin2"
+                #for i in bin2pts:
+                #        print str(i)
 
 		self.surfaceNormal = bin1norm if bin1 < bin2 else bin2norm
 

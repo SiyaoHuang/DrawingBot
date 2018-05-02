@@ -5,9 +5,11 @@ pointArray = []
 
 # Create controller and set it up
 controller = Controller()
+controller.imageprocessor.write = True
 print "calibrating..."
 controller.calibrateManual()
 print "finished!"
+print controller.pmap.surfaceNormal
 controller.printPosition()
 
 for i in pointArray:
