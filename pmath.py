@@ -106,31 +106,39 @@ class Vec2(object):
 	def __str__(self):
 		return "<%f, %f>" % (self.x, self.y)
 
-# Finds the end of a function given the function and an epsilon value
-def findEnd(f, a, b, eps):
-	left, right = a, b
-	while right - left > eps:
-		middle = (left + right) / 2
-		if f(middle) == None:
-			right = middle
-		else:
-			left = middle
-	return left
+class PFunction(object):
+	def __init__(self, f, eps):
+		self.f = f
+		self.eps = eps
 
-# Finds the slope of a function given an epsilon value and an 
-# input value. Looks back by eps.
-def findSlope(f, x, eps):
-	return (f(x) - f(x - eps)) / eps
+	def __call__(self, x):
+		return self.f(x)
 
-# Finds the minimum of a function given a range and an epsilon value. 
-# Returns the input value for which the function is minimum. Works
-# only for unimodal functions.
-def findMin(f, a, b, eps):
-	left, right = a, b
-	while right - left > eps:
-		middle = (left + right) / 2
-		if findSlope(f, middle, eps) > 0:
-			right = middle
-		else:
-			left = middle
-	return (left + right) / 2
+	# Finds the slope of the function at a certain point.
+	def slope(self, x):
+		return (self.f(x) - self.f(x - self.eps)) / self.eps
+
+	# Finds the end of the function in a certain range and return 
+	# the input value.
+	def findEnd(self, a, b):
+		left, right = a, b
+		while right - left > self.eps:
+			middle = (left + right) / 2
+			if self.f(middle) == None:
+				right = middle
+			else:
+				left = middle
+		return left
+
+	# Finds the minimum of a function given a domain interval and
+	# returns the input value for which the function is minimum. Works
+	# only for unimodal functions.
+	def findMin(self, a, b):
+		left, right = a, b
+		while right - left > self.eps:
+			middle = (left + right) / 2
+			if self.slope(middle) > 0:
+				right = middle
+			else:
+				left = middle
+		return (left + right) / 2

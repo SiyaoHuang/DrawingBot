@@ -13,17 +13,17 @@ class Triangle(object):
 		self.r = r
 		self.g = g
 		self.b = b
-
-	def center(self):
-		avg = (self.r + self.g + self.b) / 3.0
-		return TRIANGLE_UNITS * avg
-
-	def normal(self):
-		return (self.b - self.r).cross(self.g - self.r).normalize()
+		self.center = (r + g + b) / 3.0
+		self.normal = (b - r).cross(g - r).normalize()
+		self.direction = (g - (r + b) / 2).normalize()
 	
 	def __str__(self):
-		return "[%s, %s]" % (str(self.center()), str(self.normal()))
+		return "[%s, %s]" % (str(self.center), str(self.normal))
 
+# This class provides the functions necessary to convert screen space 
+# coordinates (e.g. pixel coordinates) into coordinates in the 3D world as well as
+# 2D coordinates on paper space (e.g. the plane on which the robot travels).
+#
 # Note: before perspective mapping can be utilized, the surface normal
 # must be calibrated. This is done by:
 # 	self.addCalibration -> ... -> self.addCalibration -> self.calibrateSurfaceNormal -> self.initSurface
@@ -96,27 +96,28 @@ class PMap(object):
 	# Returns a function that traces a specific triangle path and returns 
 	# an array containing the path that it took.
 	def makeTraceFunc(self, path):
-		return lambda t: self.generateDiff(t)[path]
+		f = lambda t: self.generateDiff(t)[path]
+		return PFunction(f, self.epsx)
 
 	# Returns a function that traces a specific triangle path for a given
 	# ta and returns abs(ta - looped around ta)
 	def makeDiffFunc(self, path):
-		def func(t):
+		def f(t):
 			res = self.generateDiff(t)[path]
 			if res[-1] == None:
 				return None
 			return abs(res[0] - res[-1])
-		return func
+		return PFunction(f, self.epsx)
 
 	# Returns a function that traces a specific triangle path for a given
 	# ta and returns ta - looped around ta
 	def makeSDiffFunc(self, path):
-		def func(t):
+		def f(t):
 			res = self.generateDiff(t)[path]
 			if res[-1] == None:
 				return None
 			return res[0] - res[-1]
-		return func
+		return PFunction(f, self.epsx)
 
 	# Sweeps all diff function paths with a certain step size and prints out
 	# the resulting values. Can copy/paste into excel to graph. 
@@ -143,16 +144,15 @@ class PMap(object):
 		for i in range(8):
 			f = self.makeDiffFunc(i)
 			trace = self.makeTraceFunc(i)
-			end = findEnd(f, 0.0, DISTANCE_MAX, self.epsx)
-			m = findMin(f, 0.0, end, self.epsx)
+			end = f.findEnd(0.0, DISTANCE_MAX)
+			m = f.findMin(0.0, end)
 			mins += [(f(m), trace(m))]
 
 		mins = filter(lambda x: x[0] < self.epsy, mins)
 		mins = map(lambda x: x[1], mins)
 		triangles = []
 		for tri in mins:
-			r, g, b, r2 = tri
-			r = (r + r2) / 2
+			r, g, b, _ = tri
 			r, g, b = self.ra * r, self.rb * g, self.rc * b
 			triangles += [Triangle(r, g, b)]
 		return triangles
@@ -160,7 +160,7 @@ class PMap(object):
 	# Finds triangle whose normal is closest to the established
 	# surface normal.
 	def getClosestTriangle(self, arr):
-		return min(arr, key=lambda t: t.normal().dist_to(self.surfaceNormal))
+		return min(arr, key=lambda t: t.normal.dist_to(self.surfaceNormal))
 
 	# Adds possible triangles to the calibration
 	def addCalibration(self, p1, p2, p3):
@@ -177,57 +177,54 @@ class PMap(object):
 		bin2pts = []
 		for i in self.calibrate:
 			if bin1norm == bin2norm == None:
-				bin1norm = i.normal()
-				bin1pts += [i.center()]
+				bin1norm = i.normal
+				bin1pts += [i.center]
 			elif bin2norm == None:
-				bin2norm = i.normal()
-				bin2pts += [i.center()]
+				bin2norm = i.normal
+				bin2pts += [i.center]
 			else:
-				one = bin1norm.dist_to(i.normal())
-				two = bin2norm.dist_to(i.normal())
+				one = bin1norm.dist_to(i.normal)
+				two = bin2norm.dist_to(i.normal)
 				if one < two:
-					bin1norm = (bin1norm + i.normal()) / 2
-					bin1pts += [i.center()]
+					bin1norm = (bin1norm + i.normal) / 2
+					bin1pts += [i.center]
 				else:
-					bin2norm = (bin2norm + i.normal()) / 2
-					bin2pts += [i.center()]
+					bin2norm = (bin2norm + i.normal) / 2
+					bin2pts += [i.center]
 
 		bin1 = 0
 		for i in range(len(bin1pts) - 1):
 			bin1 += abs((bin1pts[i] - bin1pts[i + 1]) * bin1norm)
-
 		bin2 = 0
 		for i in range(len(bin2pts) - 1):
 			bin2 += abs((bin2pts[i] - bin2pts[i + 1]) * bin2norm)
 
-		print bin1, bin2
 		self.surfaceNormal = bin1norm if bin1 < bin2 else bin2norm
-		print "surface normal:" +str(self.surfaceNormal)
 
 	# Sets starting position in 3D space
 	def initSurface(self, p1, p2, p3):
-		self.start = self.perspectiveMap(p1, p2, p3)
-		forward = ((p1 + p3) / 2)
-		self.surfaceX = forward.cross(self.surfaceNormal).normalize()
+		triangle = self.perspectiveMap(p1, p2, p3)
+		self.start = triangle.center
+		self.surfaceX = triangle.direction.cross(self.surfaceNormal).normalize()
 		self.surfaceY = self.surfaceNormal.cross(self.surfaceX).normalize()
 
 	# Resets calibration array
 	def resetCalibration(self):
 		self.calibrate = []
 
-	# Finds triangle in 3D space relative to the camera
+	# Finds triangle in 3D space relative to the camera.
 	def perspectiveMap(self, p1, p2, p3):
 		self.setPoints(p1, p2, p3)
 		ts = self.findTriangles()
 		return self.getClosestTriangle(ts)
 
 	# Finds position on the surface plane relative to the starting position
-	# and returns 2D coordinates and the direction vector
+	# and returns 2D coordinates and the direction vector.
 	def surfaceMap(self, p1, p2, p3):
 		triangle = self.perspectiveMap(p1, p2, p3)
-		p = triangle.center() - self.start
+		p = triangle.center - self.start
 		position = Vec2(self.surfaceX * p, self.surfaceY * p)
-		d = triangle.direction()
+		d = triangle.direction
 		direction = Vec2(self.surfaceX * d, self.surfaceY * d).normalize()
 		return (position, direction)
 

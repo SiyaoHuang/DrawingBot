@@ -3,6 +3,11 @@ from bot import *
 from imageprocessor import *
 import time
 
+# This class provides high level actions of the robot, primarily 
+# going towards a target point. It uses the image processor in
+# conjunction with the pmap class to find the robot's location 
+# and control the robot accordingly. It also performs the 
+# calibrations necessary to configure the pmap surface normal.
 class Controller(object):
 	def __init__(self, eps=0.1):
 		self.imageprocessor = ImageProcessor()
@@ -42,7 +47,7 @@ class Controller(object):
 				continue
 			p1, p2, p3 = pos
 			self.pmap.addCalibration(p1, p2, p3)
-			time.sleep(.2)
+			time.sleep(.1)
 
 		# Set surface normal
 		self.pmap.calibrateSurfaceNormal()
@@ -61,7 +66,4 @@ class Controller(object):
 	# Moves the bot to a certain target coordinate until it is within
 	# a distance of self.eps.
 	def gotoTarget(self, target):
-		# Moves the robot to the target point and stops
-		while True:
-			p1, p2, p3 = self.imageprocessor.getPoints()
-			pos, d = self.pmap.surfaceMap(p1, p2, p3)
+		# TODO: implement PID possibly to guide robot to target

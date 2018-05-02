@@ -17,6 +17,9 @@ SIZEMIN				=      900
 RES 				= 832, 624
 FRAMERATE 			=		30
 
+# This class handles all image processing including taking a picture
+# with the Raspberry Pi camera as well as performing the image processing 
+# necessary to locate the centers of the yellow, green, and blue circles.
 class ImageProcessor(object):
 	def __init__(self):
 		self.cam = PiCamera()
@@ -52,9 +55,10 @@ class ImageProcessor(object):
 		return (cx, cy)
 
 	# Takes a picture and returns the pixel coordinates of the yellow, 
-	# green, and blue circles respectively.
+	# green, and blue circles respectively. Returns None if it is unable 
+	# to find one or more of the circles.
 	def getPoints(self):
-		# read in image and threshold
+		# read in image and threshold to get binary images
 		imagergb = self.getImage()
 		image = cv2.cvtColor(imagergb, cv2.COLOR_BGR2HSV)
 		maskg = cv2.inRange(image, np.array([YMIN,SMIN,VYMIN]),np.array([YMAX,SMAX,VYMAX]))
