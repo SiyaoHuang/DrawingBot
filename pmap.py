@@ -20,6 +20,9 @@ class Triangle(object):
 
 	def normal(self):
 		return (self.b - self.r).cross(self.g - self.r).normalize()
+	
+	def __str__(self):
+                return "[%s, %s]" % (str(self.center()), str(self.normal()))
 
 class PMap(object):
 	def __init__(self, epsx, epsy):
@@ -55,8 +58,6 @@ class PMap(object):
 		self.ra = p1.normalize()
 		self.rb = p2.normalize()
 		self.rc = p3.normalize()
-
-		print self.ra
 
 	# Traces out a triangle for a given ta value and returns
 	# the path that it took.
@@ -154,14 +155,44 @@ class PMap(object):
 	# Given a list of triangles, finds the surface normal that is 
 	# closest to all triangle normals.
 	def calibrateSurfaceNormal(self):
-		arr = self.calibrate
-		# TODO: find surface normal
-		self.surfaceNormal = Vec3(0.0, 0.0, 0.0)
+		bin1norm = None
+		bin1pts = []
+		bin2norm = None
+		bin2pts = []
+		for i in self.calibrate:
+                    if bin1norm == bin2norm == None:
+                        bin1norm = i.normal()
+                        bin1pts += [i.center()]
+                    elif bin2norm == None:
+                        bin2norm = i.normal()
+                        bin2pts += [i.center()]
+                    else:
+                        one = bin1norm.dist_to(i.normal())
+                        two = bin2norm.dist_to(i.normal())
+                        if one < two:
+                            bin1norm = (bin1norm + i.normal()) / 2
+                            bin1pts += [i.center()]
+                        else:
+                            bin2norm = (bin2norm + i.normal()) / 2
+                            bin2pts += [i.center()]
+                
+                bin1 = 0
+                for i in range(len(bin1pts) - 1):
+                    bin1 += abs((bin1pts[i] - bin1pts[i + 1]) * bin1norm)
+                
+                bin2 = 0
+                for i in range(len(bin2pts) - 1):
+                    bin2 += abs((bin2pts[i] - bin2pts[i + 1]) * bin2norm)
+                
+                print bin1, bin2
+                self.surfaceNormal = bin1norm if bin1 < bin2 else bin2norm
+                print "surface normal:" +str(self.surfaceNormal)
 
 	# Adds possible triangles to the calibration
 	def addCalibration(self, p1, p2, p3):
 		self.setPoints(p1, p2, p3)
-		self.calibrate += self.findTriangles()
+		triangles = self.findTriangles()
+		self.calibrate += triangles
 
 	# Resets calibration array
 	def resetCalibration(self):
@@ -183,12 +214,12 @@ class PMap(object):
 		# TODO: map 3D point to 2D coordinate in plane space
 		pass
 
-p = PMap(epsx=0.001, epsy=0.01)
+##p = PMap(epsx=0.001, epsy=0.01)
 # print p.perspectiveMap((407, 218), (447, 273), (493, 220))
 # p.setPoints((407, 218), (447, 273), (493, 220)) #<-0.013079, 0.136606, 0.990539>, 7.88
 # p.setPoints((406, 330), (438, 370), (477, 333)) #<-0.014665, -0.026396, 0.999544>, 9.49
 # p.sweepTriangles(0.01)
 
-a = 7.88 * Vec3(-0.013079, 0.136606, 0.990539)
-b = 9.49 * Vec3(-0.014665, -0.026396, 0.999544)
-print (a - b).mag()
+##a = 7.88 * Vec3(-0.013079, 0.136606, 0.990539)
+##b = 9.49 * Vec3(-0.014665, -0.026396, 0.999544)
+##print (a - b).mag()
