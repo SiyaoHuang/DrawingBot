@@ -22,18 +22,28 @@ class Triangle(object):
 		return (self.b - self.r).cross(self.g - self.r).normalize()
 	
 	def __str__(self):
-                return "[%s, %s]" % (str(self.center()), str(self.normal()))
+		return "[%s, %s]" % (str(self.center()), str(self.normal()))
 
+# Note: before perspective mapping can be utilized, the surface normal
+# must be calibrated. This is done by:
+# 	self.addCalibration -> ... -> self.addCalibration -> self.calibrateSurfaceNormal -> self.initSurface
 class PMap(object):
 	def __init__(self, epsx, epsy):
+		# Epsilon values
 		self.epsx = epsx
 		self.epsy = epsy
+
+		# Direction vectors
 		self.ra = None
 		self.rb = None
 		self.rc = None
-		self.start = None
-		self.surfaceNormal = None #Vec3(0.039564, -0.737417, 0.674278)
+
+		# Surface variables
 		self.calibrate = []
+		self.start = None
+		self.surfaceNormal = None
+		self.surfaceX = None
+		self.surfaceY = None
 
 	# Input vectors in pixel coordinates
 	def setPoints(self, p1, p2, p3):
@@ -150,7 +160,13 @@ class PMap(object):
 	# Finds triangle whose normal is closest to the established
 	# surface normal.
 	def getClosestTriangle(self, arr):
-		return min(arr, key=lambda t: abs(1 - t.normal() * self.surfaceNormal))
+		return min(arr, key=lambda t: t.normal().dist_to(self.surfaceNormal))
+
+	# Adds possible triangles to the calibration
+	def addCalibration(self, p1, p2, p3):
+		self.setPoints(p1, p2, p3)
+		triangles = self.findTriangles()
+		self.calibrate += triangles
 
 	# Given a list of triangles, finds the surface normal that is 
 	# closest to all triangle normals.
@@ -160,59 +176,60 @@ class PMap(object):
 		bin2norm = None
 		bin2pts = []
 		for i in self.calibrate:
-                    if bin1norm == bin2norm == None:
-                        bin1norm = i.normal()
-                        bin1pts += [i.center()]
-                    elif bin2norm == None:
-                        bin2norm = i.normal()
-                        bin2pts += [i.center()]
-                    else:
-                        one = bin1norm.dist_to(i.normal())
-                        two = bin2norm.dist_to(i.normal())
-                        if one < two:
-                            bin1norm = (bin1norm + i.normal()) / 2
-                            bin1pts += [i.center()]
-                        else:
-                            bin2norm = (bin2norm + i.normal()) / 2
-                            bin2pts += [i.center()]
-                
-                bin1 = 0
-                for i in range(len(bin1pts) - 1):
-                    bin1 += abs((bin1pts[i] - bin1pts[i + 1]) * bin1norm)
-                
-                bin2 = 0
-                for i in range(len(bin2pts) - 1):
-                    bin2 += abs((bin2pts[i] - bin2pts[i + 1]) * bin2norm)
-                
-                print bin1, bin2
-                self.surfaceNormal = bin1norm if bin1 < bin2 else bin2norm
-                print "surface normal:" +str(self.surfaceNormal)
+			if bin1norm == bin2norm == None:
+				bin1norm = i.normal()
+				bin1pts += [i.center()]
+			elif bin2norm == None:
+				bin2norm = i.normal()
+				bin2pts += [i.center()]
+			else:
+				one = bin1norm.dist_to(i.normal())
+				two = bin2norm.dist_to(i.normal())
+				if one < two:
+					bin1norm = (bin1norm + i.normal()) / 2
+					bin1pts += [i.center()]
+				else:
+					bin2norm = (bin2norm + i.normal()) / 2
+					bin2pts += [i.center()]
 
-	# Adds possible triangles to the calibration
-	def addCalibration(self, p1, p2, p3):
-		self.setPoints(p1, p2, p3)
-		triangles = self.findTriangles()
-		self.calibrate += triangles
+		bin1 = 0
+		for i in range(len(bin1pts) - 1):
+			bin1 += abs((bin1pts[i] - bin1pts[i + 1]) * bin1norm)
+
+		bin2 = 0
+		for i in range(len(bin2pts) - 1):
+			bin2 += abs((bin2pts[i] - bin2pts[i + 1]) * bin2norm)
+
+		print bin1, bin2
+		self.surfaceNormal = bin1norm if bin1 < bin2 else bin2norm
+		print "surface normal:" +str(self.surfaceNormal)
+
+	# Sets starting position in 3D space
+	def initSurface(self, p1, p2, p3):
+		self.start = self.perspectiveMap(p1, p2, p3)
+		forward = ((p1 + p3) / 2)
+		self.surfaceX = forward.cross(self.surfaceNormal).normalize()
+		self.surfaceY = self.surfaceNormal.cross(self.surfaceX).normalize()
 
 	# Resets calibration array
 	def resetCalibration(self):
 		self.calibrate = []
 
-	# Finds position in 3D space relative to the camera
+	# Finds triangle in 3D space relative to the camera
 	def perspectiveMap(self, p1, p2, p3):
 		self.setPoints(p1, p2, p3)
 		ts = self.findTriangles()
-		return self.getClosestTriangle(ts).center()
-
-	# Sets starting position in 3D space
-	def setStartPosition(self, p1, p2, p3):
-		self.start = self.perspectiveMap(p1, p2, p3)
+		return self.getClosestTriangle(ts)
 
 	# Finds position on the surface plane relative to the starting position
-	# and returns 2D coordinates
+	# and returns 2D coordinates and the direction vector
 	def surfaceMap(self, p1, p2, p3):
-		# TODO: map 3D point to 2D coordinate in plane space
-		pass
+		triangle = self.perspectiveMap(p1, p2, p3)
+		p = triangle.center() - self.start
+		position = Vec2(self.surfaceX * p, self.surfaceY * p)
+		d = triangle.direction()
+		direction = Vec2(self.surfaceX * d, self.surfaceY * d).normalize()
+		return (position, direction)
 
 ##p = PMap(epsx=0.001, epsy=0.01)
 # print p.perspectiveMap((407, 218), (447, 273), (493, 220))

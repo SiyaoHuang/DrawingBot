@@ -30,7 +30,6 @@ class Bot(object):
 		self.leftServo = Servo(PIN_LEFT_SERVO)
 		self.rightServo = Servo(PIN_RIGHT_SERVO)
 		self.penServo = Servo(PIN_PEN_SERVO)
-
 		self.pen = False
 
 	def rotate(self, i):

@@ -1,11 +1,14 @@
-import controller.Controller as Controller
+from controller import *
 
-# draw stuff on piTFT maybe?
-
-# read in points as array
+# Read in points as array
 pointArray = []
+
+# Create controller and set it up
 controller = Controller()
-print "starting drawing."
+print "calibrating..."
+controller.calibrate()
+print "finished!"
+controller.printPosition()
 
 for i in pointArray:
 	print "drawing point " + str(i)
