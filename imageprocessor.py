@@ -56,7 +56,7 @@ class ImageProcessor(object):
 		return (cx, cy)
 	
 	def pixelDistance(self, a, b):
-            return ((float(a[0]) - b[0]) ** 2 + (float(a[1]) - b[1]) ** 2) ** .5
+		return ((float(a[0]) - b[0]) ** 2 + (float(a[1]) - b[1]) ** 2) ** .5
 
 	# Takes a picture and returns the pixel coordinates of the yellow, 
 	# green, and blue circles respectively. Returns None if it is unable 
@@ -82,41 +82,39 @@ class ImageProcessor(object):
 		cntsy = filter(self.checkSize, cntsy)
 		if cntsy == []:
 			return None
-		cntsy = sorted(cntsy, key=self.getShape)[:3]
+		cntsy = sorted(cntsy, key=self.getShape)
 
 		cntsg = cv2.findContours(maskg.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 		cntsg = cntsg[0] if imutils.is_cv2() else cntsg[1]
 		cntsg = filter(self.checkSize, cntsg)
 		if cntsg == []:
 			return None
-		cntsg = sorted(cntsg, key=self.getShape)[:3]
+		cntsg = sorted(cntsg, key=self.getShape)
 
 		cntsb = cv2.findContours(maskb.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 		cntsb = cntsb[0] if imutils.is_cv2() else cntsb[1]
 		cntsb = filter(self.checkSize, cntsb)
 		if cntsb == []:
 			return None
-		cntsb = sorted(cntsb, key=self.getShape)[:3]
+		cntsb = sorted(cntsb, key=self.getShape)
 		
 		if len(cntsy) == 0 or len(cntsg) == 0 or len(cntsb) == 0:
-                    return None
-                
-                # Compare distances
-                m = 99999999
-                triple = None
-                for i in cntsy:
-                    for j in cntsg:
-                        for k in cntsb:
-                            ic = self.getCenter(i)
-                            jc = self.getCenter(j)
-                            kc = self.getCenter(k)
-                            ij = self.pixelDistance(ic, jc)
-                            jk = self.pixelDistance(jc, kc)
-                            ki = self.pixelDistance(kc, ic)
-                            if ij + jk + ki < m:
-                                m = ij + jk + ki
-                                triple = (ic, jc, kc)
+			return None
 
-		# get coordinates
-		#y, g, b = self.getCenter(cntsy), self.getCenter(cntsg), self.getCenter(cntsb)
+		# Compare top 3 circles from each mask to find coordinates
+		m = 2 * self.pixelDistance((0, 0), RES)
+		triple = None
+		for i in cntsy[:3]:
+			for j in cntsg[:3]:
+				for k in cntsb[:3]:
+					ic = self.getCenter(i)
+					jc = self.getCenter(j)
+					kc = self.getCenter(k)
+					ij = self.pixelDistance(ic, jc)
+					jk = self.pixelDistance(jc, kc)
+					ki = self.pixelDistance(kc, ic)
+					if ij + jk + ki < m:
+						m = ij + jk + ki
+						triple = (ic, jc, kc)
+
 		return triple

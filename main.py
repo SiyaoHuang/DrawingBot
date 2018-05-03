@@ -10,7 +10,6 @@ print "calibrating..."
 controller.calibrateManual()
 print "finished!"
 print controller.pmap.surfaceNormal
-controller.printPosition()
 
 for i in pointArray:
 	print "drawing point " + str(i)
