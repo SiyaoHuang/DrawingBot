@@ -147,9 +147,9 @@ class PMap(object):
 			end = f.findEnd(0.0, DISTANCE_MAX)
 			m = f.findMin(0.0, end)
 			if m == None:
-                            continue
-                        if None in trace(m):
-                            continue
+				continue
+			if None in trace(m):
+				continue
 			mins += [(f(m), trace(m))]
 
 		mins = filter(lambda x: x[0] < self.epsy, mins)

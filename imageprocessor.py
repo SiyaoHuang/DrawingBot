@@ -58,7 +58,7 @@ class ImageProcessor(object):
 		return (cx, cy)
 	
 	def pixelDistance(self, a, b):
-            return ((float(a[0]) - b[0]) ** 2 + (float(a[1]) - b[1]) ** 2) ** .5
+		return ((float(a[0]) - b[0]) ** 2 + (float(a[1]) - b[1]) ** 2) ** .5
 
 	# Takes a picture and returns the pixel coordinates of the yellow, 
 	# green, and blue circles respectively. Returns None if it is unable 
@@ -77,31 +77,31 @@ class ImageProcessor(object):
 		cntsy = filter(self.checkSize, cntsy)
 		if cntsy == []:
 			return None
-		cntsy = sorted(cntsy, key=self.getShape)[:3]
+		cntsy = sorted(cntsy, key=self.getShape)
 
 		cntsg = cv2.findContours(maskg.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 		cntsg = cntsg[0] if imutils.is_cv2() else cntsg[1]
 		cntsg = filter(self.checkSize, cntsg)
 		if cntsg == []:
 			return None
-		cntsg = sorted(cntsg, key=self.getShape)[:3]
+		cntsg = sorted(cntsg, key=self.getShape)
 
 		cntsb = cv2.findContours(maskb.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 		cntsb = cntsb[0] if imutils.is_cv2() else cntsb[1]
 		cntsb = filter(self.checkSize, cntsb)
 		if cntsb == []:
 			return None
-		cntsb = sorted(cntsb, key=self.getShape)[:3]
+		cntsb = sorted(cntsb, key=self.getShape)
 		
 		if len(cntsy) == 0 or len(cntsg) == 0 or len(cntsb) == 0:
                     return None
                 
                 # Compare distances
-                m = 99999999
+                m = 2 * self.pixelDistance((0, 0), RES)
                 triple = None
-                for i in cntsy:
-                    for j in cntsg:
-                        for k in cntsb:
+                for i in cntsy[:3]:
+                    for j in cntsg[:3]:
+                        for k in cntsb[:3]:
                             ic = self.getCenter(i)
                             jc = self.getCenter(j)
                             kc = self.getCenter(k)
@@ -113,18 +113,16 @@ class ImageProcessor(object):
                                 triple = (ic, jc, kc)
                 
                 y, g, b = triple
-                imagergb = imagergb.copy()
-                imagergb[y[1]][y[0]] = [0, 0, 255]
-                imagergb[g[1]][g[0]] = [0, 0, 255]
-                imagergb[b[1]][b[0]] = [0, 0, 255]
                 if self.write:
+                        imagergb = imagergb.copy()
+                        imagergb[y[1]][y[0]] = [0, 0, 255]
+                        imagergb[g[1]][g[0]] = [0, 0, 255]
+                        imagergb[b[1]][b[0]] = [0, 0, 255]
 			cv2.imwrite("output/imagergb%i.jpg" % self.counter,imagergb)
 			cv2.imwrite("output/image%i.jpg" % self.counter,image)
 			cv2.imwrite("output/masky%i.jpg" % self.counter,masky)
 			cv2.imwrite("output/maskg%i.jpg" % self.counter,maskg)
 			cv2.imwrite("output/maskb%i.jpg" % self.counter,maskb)
-		self.counter += 1
+                        self.counter += 1
 
-		# get coordinates
-		#y, g, b = self.getCenter(cntsy), self.getCenter(cntsg), self.getCenter(cntsb)
 		return triple
