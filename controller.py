@@ -57,14 +57,14 @@ class Controller(object):
 
 		# Calibrate PMap by providing a sample of coordinates
 		ts = time.time()
-		while time.time() - ts < 10:
+		while time.time() - ts < 15:
                         print time.time() - ts
 			pos = self.imageprocessor.getPoints()
 			if pos == None:
 				continue
 			p1, p2, p3 = pos
 			self.pmap.addCalibration(p1, p2, p3)
-			time.sleep(.1)
+			time.sleep(.05)
                     
 		# Set surface normal
 		self.pmap.calibrateSurfaceNormal()

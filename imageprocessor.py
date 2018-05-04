@@ -28,6 +28,8 @@ class ImageProcessor(object):
 		self.cam.framerate = FRAMERATE
 		self.raw = PiRGBArray(self.cam, size=RES)
 		self.write = False
+		
+		self.counter = 0
 
 	# Takes an image and returns it as a numpy array.
 	def getImage(self):
@@ -67,14 +69,7 @@ class ImageProcessor(object):
 		image = cv2.cvtColor(imagergb, cv2.COLOR_BGR2HSV)
 		masky = cv2.inRange(image, np.array([YMIN,SMIN,VYMIN]),np.array([YMAX,SMAX,VYMAX]))
 		maskg = cv2.inRange(image, np.array([GMIN,SMIN,VGMIN]),np.array([GMAX,SMAX,VGMAX]))
-		maskb = cv2.inRange(image, np.array([BMIN,SMIN,VBMIN]),np.array([BMAX,SMAX,VBMAX]))
-
-		if self.write:
-			cv2.imwrite("imagergb.jpg",imagergb)
-			cv2.imwrite("image.jpg",image)
-			cv2.imwrite("masky.jpg",masky)
-			cv2.imwrite("maskg.jpg",maskg)
-			cv2.imwrite("maskb.jpg",maskb)
+		maskb = cv2.inRange(image, np.array([BMIN,70,VBMIN]),np.array([BMAX,SMAX,VBMAX]))
 
 		# image processing to find center of yellow, green, and blue circles
 		cntsy = cv2.findContours(masky.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -116,6 +111,19 @@ class ImageProcessor(object):
                             if ij + jk + ki < m:
                                 m = ij + jk + ki
                                 triple = (ic, jc, kc)
+                
+                y, g, b = triple
+                imagergb = imagergb.copy()
+                imagergb[y[1]][y[0]] = [0, 0, 255]
+                imagergb[g[1]][g[0]] = [0, 0, 255]
+                imagergb[b[1]][b[0]] = [0, 0, 255]
+                if self.write:
+			cv2.imwrite("output/imagergb%i.jpg" % self.counter,imagergb)
+			cv2.imwrite("output/image%i.jpg" % self.counter,image)
+			cv2.imwrite("output/masky%i.jpg" % self.counter,masky)
+			cv2.imwrite("output/maskg%i.jpg" % self.counter,maskg)
+			cv2.imwrite("output/maskb%i.jpg" % self.counter,maskb)
+		self.counter += 1
 
 		# get coordinates
 		#y, g, b = self.getCenter(cntsy), self.getCenter(cntsg), self.getCenter(cntsb)

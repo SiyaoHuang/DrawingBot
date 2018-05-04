@@ -5,7 +5,7 @@ pointArray = []
 
 # Create controller and set it up
 controller = Controller()
-controller.imageprocessor.write = True
+controller.imageprocessor.write = False
 print "calibrating..."
 controller.calibrateManual()
 print "finished!"
