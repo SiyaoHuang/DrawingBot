@@ -1,9 +1,9 @@
 import RPi.GPIO as GPIO
 
 # Pin assignments
-PIN_LEFT_SERVO = 0
-PIN_RIGHT_SERVO = 0
-PIN_PEN_SERVO = 0
+PIN_LEFT_SERVO = 3
+PIN_RIGHT_SERVO = 5
+PIN_PEN_SERVO = 7
 
 class Servo(object):
 	def __init__(self, pin, dir='cw'):
@@ -13,7 +13,7 @@ class Servo(object):
 		self.period = 0.020
 		self.maxduty = self.maxspd / self.period
 		self.minduty = self.minspd / self.period
-		self.dir = 1 if 'cw' else 'ccw'
+		self.dir = 1 if 'cw' else -1
 
 		GPIO.setup(self.pin, GPIO.OUT)
 		self.pwm = GPIO.PWM(self.pin, 1 / self.period)

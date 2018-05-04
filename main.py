@@ -4,12 +4,19 @@ from controller import *
 pointArray = []
 
 # Create controller and set it up
-controller = Controller()
-controller.imageprocessor.write = False
-print "calibrating..."
-controller.calibrateManual()
-print "finished!"
-print controller.pmap.surfaceNormal
+##controller = Controller()
+##controller.imageprocessor.write = False
+##print "calibrating..."
+##controller.calibrateManual()
+##print "finished!"
+##print controller.pmap.surfaceNormal
+##controller.printVector()
+
+bot = Bot()
+bot.forward(.5)
+
+while True:
+    pass
 
 for i in pointArray:
 	print "drawing point " + str(i)

@@ -11,7 +11,7 @@ import time
 class Controller(object):
 	def __init__(self, epsxy=0.1, epst=0.1):
 		self.imageprocessor = ImageProcessor()
-		#self.bot = Bot()
+		self.bot = Bot()
 		self.pmap = PMap(epsx=0.0001, epsy=0.01)
 		self.position = None
 		self.direction = None
@@ -76,7 +76,7 @@ class Controller(object):
 		self.position, self.direction = self.pmap.surfaceMap(p1i, p2i, p3i)
 
 	# Continually prints out the 2D position of the bot on the surface.
-	def printPosition(self):
+	def printVector(self):
 		while True:
 			points = self.imageprocessor.getPoints()
 			if points == None:
