@@ -39,8 +39,8 @@ class Controller(object):
 
 			p1, p2, p3 = curr
 			self.pmap.addCalibration(p1, p2, p3)
-                self.bot.stop()
-                
+		self.bot.stop()
+
 		# Set surface normal
 		self.pmap.calibrateSurfaceNormal()
 		self.pmap.initSurface(p1i, p2i, p3i)

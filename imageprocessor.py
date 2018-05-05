@@ -94,35 +94,35 @@ class ImageProcessor(object):
 		cntsb = sorted(cntsb, key=self.getShape)
 		
 		if len(cntsy) == 0 or len(cntsg) == 0 or len(cntsb) == 0:
-                    return None
-                
-                # Compare distances
-                m = 2 * self.pixelDistance((0, 0), RES)
-                triple = None
-                for i in cntsy[:3]:
-                    for j in cntsg[:3]:
-                        for k in cntsb[:3]:
-                            ic = self.getCenter(i)
-                            jc = self.getCenter(j)
-                            kc = self.getCenter(k)
-                            ij = self.pixelDistance(ic, jc)
-                            jk = self.pixelDistance(jc, kc)
-                            ki = self.pixelDistance(kc, ic)
-                            if ij + jk + ki < m:
-                                m = ij + jk + ki
-                                triple = (ic, jc, kc)
-                
-                y, g, b = triple
-                if self.write:
-                        imagergb = imagergb.copy()
-                        imagergb[y[1]][y[0]] = [0, 0, 255]
-                        imagergb[g[1]][g[0]] = [0, 0, 255]
-                        imagergb[b[1]][b[0]] = [0, 0, 255]
+			return None
+
+		# Compare distances
+		m = 2 * self.pixelDistance((0, 0), RES)
+		triple = None
+		for i in cntsy[:3]:
+			for j in cntsg[:3]:
+				for k in cntsb[:3]:
+					ic = self.getCenter(i)
+					jc = self.getCenter(j)
+					kc = self.getCenter(k)
+					ij = self.pixelDistance(ic, jc)
+					jk = self.pixelDistance(jc, kc)
+					ki = self.pixelDistance(kc, ic)
+					if ij + jk + ki < m:
+						m = ij + jk + ki
+						triple = (ic, jc, kc)
+
+		y, g, b = triple
+		if self.write:
+			imagergb = imagergb.copy()
+			imagergb[y[1]][y[0]] = [0, 0, 255]
+			imagergb[g[1]][g[0]] = [0, 0, 255]
+			imagergb[b[1]][b[0]] = [0, 0, 255]
 			cv2.imwrite("output/imagergb%i.jpg" % self.counter,imagergb)
 			cv2.imwrite("output/image%i.jpg" % self.counter,image)
 			cv2.imwrite("output/masky%i.jpg" % self.counter,masky)
 			cv2.imwrite("output/maskg%i.jpg" % self.counter,maskg)
 			cv2.imwrite("output/maskb%i.jpg" % self.counter,maskb)
-                        self.counter += 1
+			self.counter += 1
 
 		return triple

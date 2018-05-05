@@ -21,7 +21,7 @@ class Servo(object):
 		self.duty = 0
 
 	def turn(self, i):
-                i += self.trim
+		i += self.trim
 		i *= self.dir
 		i = (i + 1) / 2.0
 		duty = 100 * (self.minspd + i * (self.maxspd - self.minspd)) / self.period
