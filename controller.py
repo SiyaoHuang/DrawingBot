@@ -1,3 +1,4 @@
+import pmap
 from pmap import *
 from bot import *
 from imageprocessor import *
@@ -23,30 +24,29 @@ class Controller(object):
 	# Determines the plane of the paper in 3D space
 	def calibrate(self):
 		start = self.imageprocessor.getPoints()
-		while start != None:
+		while start == None:
 			start = self.imageprocessor.getPoints()
 		p1i, p2i, p3i = start
+		print "got start position"
 
 		# Calibrate surface normal
-		self.bot.forward(0.5)
+		self.bot.forward(0.2)
 		curr = start
-		while max(curr, key=lambda x: x[1])[1] < pmap.IMG_HEIGHT / 2:
+		while max(curr, key=lambda x: x[1])[1] > pmap.IMG_HEIGHT / 2:
 			curr = self.imageprocessor.getPoints()
 			if curr == None:
 				continue
 
 			p1, p2, p3 = curr
 			self.pmap.addCalibration(p1, p2, p3)
-
+                self.bot.stop()
+                
 		# Set surface normal
 		self.pmap.calibrateSurfaceNormal()
 		self.pmap.initSurface(p1i, p2i, p3i)
 
-		# Go back to starting position
-		while curr == None:
-			curr = self.imageprocessor.getPoints()
-		p1, p2, p3 = curr
-		self.position, self.direction = self.pmap.surfaceMap(p1, p2, p3)
+		# Set starting position
+		self.position, self.direction = self.pmap.surfaceMap(p1i, p2i, p3i)
 
 	# Sets up the PMap module by determining the surface normal
 	# and sets the initial position and direction of the bot.

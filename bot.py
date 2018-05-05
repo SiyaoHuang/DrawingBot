@@ -6,20 +6,22 @@ PIN_RIGHT_SERVO = 5
 PIN_PEN_SERVO = 7
 
 class Servo(object):
-	def __init__(self, pin, dir='cw'):
+	def __init__(self, pin, dir='cw', trim=0):
 		self.pin = pin
 		self.maxspd = 0.002
 		self.minspd = 0.001
 		self.period = 0.020
-		self.maxduty = self.maxspd / self.period
-		self.minduty = self.minspd / self.period
-		self.dir = 1 if 'cw' else -1
+		self.maxduty = 100 * self.maxspd / self.period
+		self.minduty = 100 * self.minspd / self.period
+		self.dir = 1 if dir == 'cw' else -1
+		self.trim = trim
 
 		GPIO.setup(self.pin, GPIO.OUT)
 		self.pwm = GPIO.PWM(self.pin, 1 / self.period)
 		self.duty = 0
 
 	def turn(self, i):
+                i += self.trim
 		i *= self.dir
 		i = (i + 1) / 2.0
 		duty = 100 * (self.minspd + i * (self.maxspd - self.minspd)) / self.period
@@ -40,13 +42,13 @@ class Bot(object):
 		# initialize servos
 		GPIO.setmode(GPIO.BOARD)
 		self.leftServo = Servo(PIN_LEFT_SERVO, 'cw')
-		self.rightServo = Servo(PIN_RIGHT_SERVO, 'ccw')
+		self.rightServo = Servo(PIN_RIGHT_SERVO, 'ccw', .04)
 		self.penServo = Servo(PIN_PEN_SERVO, 'cw')
 		self.pen = False
 
 	def rotate(self, i):
 		self.leftServo.turn(i)
-		self.rightServo.turn(i)
+		self.rightServo.turn(-i)
 
 	def forward(self, i):
 		self.leftServo.turn(i)

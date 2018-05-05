@@ -1,4 +1,5 @@
 from controller import *
+import time
 
 # Read in points as array
 pointArray = []
@@ -7,14 +8,18 @@ pointArray = []
 ##controller = Controller()
 ##controller.imageprocessor.write = False
 ##print "calibrating..."
-##controller.calibrateManual()
+##controller.calibrate()
 ##print "finished!"
 ##print controller.pmap.surfaceNormal
 ##controller.printVector()
 
 bot = Bot()
-bot.forward(.5)
+bot.forward(0.2)
 
+##time.sleep(1)
+##bot.adjust(.1)
+##time.sleep(1)
+##bot.adjust(-.1)
 while True:
     pass
 
