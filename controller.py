@@ -18,21 +18,34 @@ class Controller(object):
 		self.direction = None
 		self.epsxy = epsxy
 		self.epst = epst
-		self.rspeed = 0.1
-		self.fspeed = 0.1
+		self.rspeed = 0.2
+		self.fspeed = 0.2
 
 	# Determines the plane of the paper in 3D space
 	def calibrate(self):
+		print "Establishing start position..."
 		start = self.imageprocessor.getPoints()
 		while start == None:
 			start = self.imageprocessor.getPoints()
 		p1i, p2i, p3i = start
-		print "got start position"
+		print start
 
 		# Calibrate surface normal
-		self.bot.forward(0.2)
+		print "Calibrating surface normal..."
+		
+		self.bot.forward(self.fspeed)
 		curr = start
-		while max(curr, key=lambda x: x[1])[1] > pmap.IMG_HEIGHT / 2:
+		while max(curr, key=lambda x: x[1])[1] > 0.25 * pmap.IMG_HEIGHT:
+			curr = self.imageprocessor.getPoints()
+			if curr == None:
+				continue
+
+			p1, p2, p3 = curr
+			self.pmap.addCalibration(p1, p2, p3)
+
+		self.bot.rotate(self.rspeed)
+		time.sleep(3)
+		while max(curr, key=lambda x: x[0])[0] < 0.75 * pmap.IMG_WIDTH:
 			curr = self.imageprocessor.getPoints()
 			if curr == None:
 				continue
@@ -44,9 +57,12 @@ class Controller(object):
 		# Set surface normal
 		self.pmap.calibrateSurfaceNormal()
 		self.pmap.initSurface(p1i, p2i, p3i)
+		print self.pmap.surfaceNormal
 
 		# Set starting position
 		self.position, self.direction = self.pmap.surfaceMap(p1i, p2i, p3i)
+
+		print "Finished!"
 
 	# Sets up the PMap module by determining the surface normal
 	# and sets the initial position and direction of the bot.
