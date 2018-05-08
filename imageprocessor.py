@@ -5,18 +5,17 @@ from picamera import PiCamera
 import imutils
 
 # Constants
-YMIN, YMAX 			=  23,  40
-GMIN, GMAX 			=  45,  80
-BMIN, BMAX 			=  100, 120
-SMIN, SMAX 			=  30, 255
-VYMIN, VYMAX 		=   0, 255
-VGMIN, VGMAX 		=   0, 255
-VBMIN, VBMAX 		=  0, 255
-SIZEMIN				=      20 * 15
-SIZEMAX = 70*60
-
-RES 				= 832, 624
-FRAMERATE 			=		30
+YMIN, YMAX   =  23,  40
+GMIN, GMAX   =  45,  80
+BMIN, BMAX   = 100, 120
+SMIN, SMAX   =  30, 255
+VYMIN, VYMAX =   0, 255
+VGMIN, VGMAX =   0, 255
+VBMIN, VBMAX =   0, 255
+SIZEMIN	     =  20 * 15
+SIZEMAX      =  70 * 60
+RES          = 832, 624
+FRAMERATE    =       30
 
 # This class handles all image processing including taking a picture
 # with the Raspberry Pi camera as well as performing the image processing 

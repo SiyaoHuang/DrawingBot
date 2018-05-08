@@ -204,13 +204,6 @@ class PMap(object):
 		bin2 = 0
 		for i in range(len(bin2pts) - 1):
 			bin2 += abs((bin2pts[i] - bin2pts[i + 1]) * bin2norm)
-		
-		#print "bin1"
-                #for i in bin1pts:
-                #        print str(i)
-                #print "bin2"
-                #for i in bin2pts:
-                #        print str(i)
 
 		self.surfaceNormal = bin1norm if bin1 < bin2 else bin2norm
 
@@ -241,43 +234,31 @@ class PMap(object):
 		direction = Vec2(self.surfaceX * d, self.surfaceY * d).normalize()
 		return (position, direction)
 	
+	# Does the same thing as surfaceMap in O(1) time.  
 	def surfaceMapFast(self, p1, p2, p3):
-                self.setPoints(p1, p2, p3)
-                ramat = np.matrix([
-                    [self.surfaceX.x, self.surfaceY.x, -self.ra.x],
-                    [self.surfaceX.y, self.surfaceY.y, -self.ra.y],
-                    [self.surfaceX.z, self.surfaceY.z, -self.ra.z]
-                ])
-                rbmat = np.matrix([
-                    [self.surfaceX.x, self.surfaceY.x, -self.rb.x],
-                    [self.surfaceX.y, self.surfaceY.y, -self.rb.y],
-                    [self.surfaceX.z, self.surfaceY.z, -self.rb.z]
-                ])
-                rcmat = np.matrix([
-                    [self.surfaceX.x, self.surfaceY.x, -self.rc.x],
-                    [self.surfaceX.y, self.surfaceY.y, -self.rc.y],
-                    [self.surfaceX.z, self.surfaceY.z, -self.rc.z]
-                ])
-                o = np.array([[self.start.x], [self.start.y], [self.start.z]])
-                ra = ramat.I * o
-                rb = rbmat.I * o
-                rc = rcmat.I * o
-                ra = Vec2(ra[0], ra[1])
-                rb = Vec2(rb[0], rb[1])
-                rc = Vec2(rc[0], rc[1])
-                r = (ra + rb + rc) / 3
-                d = (rb - (ra + rc) / 2).normalize()
-                return (r, d)
-                
-                
-                
-
-##p = PMap(epsx=0.001, epsy=0.01)
-# print p.perspectiveMap((407, 218), (447, 273), (493, 220))
-# p.setPoints((407, 218), (447, 273), (493, 220)) #<-0.013079, 0.136606, 0.990539>, 7.88
-# p.setPoints((406, 330), (438, 370), (477, 333)) #<-0.014665, -0.026396, 0.999544>, 9.49
-# p.sweepTriangles(0.01)
-
-##a = 7.88 * Vec3(-0.013079, 0.136606, 0.990539)
-##b = 9.49 * Vec3(-0.014665, -0.026396, 0.999544)
-##print (a - b).mag()
+		self.setPoints(p1, p2, p3)
+		ramat = np.matrix([
+			[self.surfaceX.x, self.surfaceY.x, -self.ra.x],
+			[self.surfaceX.y, self.surfaceY.y, -self.ra.y],
+			[self.surfaceX.z, self.surfaceY.z, -self.ra.z]
+		])
+		rbmat = np.matrix([
+			[self.surfaceX.x, self.surfaceY.x, -self.rb.x],
+			[self.surfaceX.y, self.surfaceY.y, -self.rb.y],
+			[self.surfaceX.z, self.surfaceY.z, -self.rb.z]
+		])
+		rcmat = np.matrix([
+			[self.surfaceX.x, self.surfaceY.x, -self.rc.x],
+			[self.surfaceX.y, self.surfaceY.y, -self.rc.y],
+			[self.surfaceX.z, self.surfaceY.z, -self.rc.z]
+		])
+		o = np.array([[self.start.x], [self.start.y], [self.start.z]])
+		ra = ramat.I * o
+		rb = rbmat.I * o
+		rc = rcmat.I * o
+		ra = Vec2(ra[0], ra[1])
+		rb = Vec2(rb[0], rb[1])
+		rc = Vec2(rc[0], rc[1])
+		position = (ra + rb + rc) / 3
+		direction = (rb - (ra + rc) / 2).normalize()
+		return (position, direction)

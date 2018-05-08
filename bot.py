@@ -11,8 +11,6 @@ class Servo(object):
 		self.maxspd = 0.002
 		self.minspd = 0.001
 		self.period = 0.020
-		self.maxduty = 100 * self.maxspd / self.period
-		self.minduty = 100 * self.minspd / self.period
 		self.dir = 1 if dir == 'cw' else -1
 		self.trim = trim
 		self.duty = 0
@@ -27,21 +25,21 @@ class Servo(object):
 		i = (i + 1) / 2.0
 		duty = 1000000 * (self.minspd + i * (self.maxspd - self.minspd)) / self.period
 		self.duty = duty
-                self.pi.hardware_PWM(self.pin, 1 / self.period, duty)
+		self.pi.hardware_PWM(self.pin, 1 / self.period, duty)
 
 	def adjustDuty(self, dx):
 		dx *= self.dir
 		self.pi.hardware_PWM(self.pin, 1 / self.period, self.duty + dx)
-                
+
 	def stop(self):
-                self.pi.hardware_PWM(self.pin, 0.0, 0.0)
+		self.pi.hardware_PWM(self.pin, 0.0, 0.0)
 
 class Bot(object):
 	def __init__(self):
 		# initialize servos
-		self.pi_hw = pigpio.pi()
-		self.leftServo = Servo(self.pi_hw, PIN_LEFT_SERVO, 'cw')
-		self.rightServo = Servo(self.pi_hw, PIN_RIGHT_SERVO, 'ccw')
+		pi_hw = pigpio.pi()
+		self.leftServo = Servo(pi_hw, PIN_LEFT_SERVO, 'cw')
+		self.rightServo = Servo(pi_hw, PIN_RIGHT_SERVO, 'ccw')
 		#self.penServo = Servo(self.pi_hw, PIN_PEN_SERVO, 'cw')
 		self.pen = False
 
@@ -68,4 +66,3 @@ class Bot(object):
 	def stop(self):
 		self.leftServo.stop()
 		self.rightServo.stop()
-

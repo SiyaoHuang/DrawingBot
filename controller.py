@@ -101,7 +101,7 @@ class Controller(object):
 				continue
 			p1, p2, p3 = points
 			pos, d = self.pmap.surfaceMapFast(p1, p2, p3)
-			print str(pos), str(d)
+			print "(%f, %f)" % (pos.x, pos.y), "(%f, %f)" % (d.x, d.y)
 
 	# Sets the 2D position and direction of the robot.
 	def setVector(self):
@@ -146,6 +146,6 @@ class Controller(object):
 			# Adjust trajectory based on error
 			self.bot.adjust(scale * err)
 			
-                if draw:
-                    self.bot.penUp(self.pspeed)
+		if draw:
+			self.bot.penUp(self.pspeed)
 		self.bot.stop()
