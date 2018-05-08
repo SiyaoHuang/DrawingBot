@@ -1,6 +1,6 @@
 import pmap
 from pmap import *
-from bot import *
+from wireless import *
 from imageprocessor import *
 import time
 
@@ -12,7 +12,7 @@ import time
 class Controller(object):
 	def __init__(self, epsxy=1, epst=0.1):
 		self.imageprocessor = ImageProcessor()
-		self.bot = Bot()
+		self.bot = VirtualBot('localhost', 5005)
 		self.pmap = PMap(epsx=0.0001, epsy=0.01)
 		self.position = None
 		self.direction = None
