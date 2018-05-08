@@ -10,7 +10,7 @@ import time
 # and control the robot accordingly. It also performs the 
 # calibrations necessary to configure the pmap surface normal.
 class Controller(object):
-	def __init__(self, epsxy=0.1, epst=0.1):
+	def __init__(self, epsxy=1, epst=0.1):
 		self.imageprocessor = ImageProcessor()
 		self.bot = Bot()
 		self.pmap = PMap(epsx=0.0001, epsy=0.01)
@@ -18,8 +18,9 @@ class Controller(object):
 		self.direction = None
 		self.epsxy = epsxy
 		self.epst = epst
-		self.rspeed = 0.2
-		self.fspeed = 0.2
+		self.rspeed = 0.3
+		self.fspeed = 0.3
+		self.pspeed = 0.1
 
 	# Determines the plane of the paper in 3D space
 	def calibrate(self):
@@ -35,20 +36,21 @@ class Controller(object):
 		
 		self.bot.forward(self.fspeed)
 		curr = start
-		while max(curr, key=lambda x: x[1])[1] > 0.25 * pmap.IMG_HEIGHT:
+		while max(curr, key=lambda x: x[1])[1] > 0.35 * pmap.IMG_HEIGHT:
 			curr = self.imageprocessor.getPoints()
-			if curr == None:
-				continue
+			while curr == None:
+				curr = self.imageprocessor.getPoints()
 
 			p1, p2, p3 = curr
 			self.pmap.addCalibration(p1, p2, p3)
 
 		self.bot.rotate(self.rspeed)
-		time.sleep(3)
-		while max(curr, key=lambda x: x[0])[0] < 0.75 * pmap.IMG_WIDTH:
+		time.sleep(1.2)
+		self.bot.forward(self.fspeed)
+		while max(curr, key=lambda x: x[0])[0] < 0.60 * pmap.IMG_WIDTH:
 			curr = self.imageprocessor.getPoints()
-			if curr == None:
-				continue
+			while curr == None:
+				curr = self.imageprocessor.getPoints()
 
 			p1, p2, p3 = curr
 			self.pmap.addCalibration(p1, p2, p3)
@@ -98,7 +100,7 @@ class Controller(object):
 			if points == None:
 				continue
 			p1, p2, p3 = points
-			pos, d = self.pmap.surfaceMap(p1, p2, p3)
+			pos, d = self.pmap.surfaceMapFast(p1, p2, p3)
 			print str(pos), str(d)
 
 	# Sets the 2D position and direction of the robot.
@@ -107,24 +109,26 @@ class Controller(object):
 		while start == None:
 			start = self.imageprocessor.getPoints()
 		p1i, p2i, p3i = start
-		self.position, self.direction = self.pmap.surfaceMap(p1i, p2i, p3i)
+		self.position, self.direction = self.pmap.surfaceMapFast(p1i, p2i, p3i)
 
 	# Moves the bot to a certain target coordinate until it is within
 	# a distance of self.epsxy.
 	def gotoTarget(self, target, draw=False):
 		# Rotate bot towards the target
+		self.setVector()
 		targetDirection = (target - self.position).normalize()
-		self.bot.rotate(self.rspeed)
+		self.bot.rotate(-self.rspeed)
+		print "dir error:"
 		while abs(1 - self.direction * targetDirection) > self.epst:
 			self.setVector()
+			print abs(1 - self.direction * targetDirection)
 
 		# Put pen down
 		if draw:
-			self.bot.penDown()
+			self.bot.penDown(self.pspeed)
 
 		# Move towards target point
 		self.bot.stop()
-		time.sleep(0.5)
 		self.bot.forward(self.fspeed)
 		while self.position.dist_to(target) > self.epsxy:
 			# Get direction vector to target
@@ -136,9 +140,12 @@ class Controller(object):
 			# Calculate error
 			sign = 1 if cvec.cross(tvec).z > 0 else -1
 			err = sign * (1 - tvec * cvec)
-			scale = 0.01
+			print err
+			scale = 100000
 
 			# Adjust trajectory based on error
-			self.bot.adjust(scale * -err)
-
-		self.bot.penUp()
+			self.bot.adjust(scale * err)
+			
+                if draw:
+                    self.bot.penUp(self.pspeed)
+		self.bot.stop()

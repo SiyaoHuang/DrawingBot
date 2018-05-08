@@ -1,12 +1,12 @@
-import RPi.GPIO as GPIO
+import pigpio
 
 # Pin assignments
-PIN_LEFT_SERVO = 3
-PIN_RIGHT_SERVO = 5
-PIN_PEN_SERVO = 7
+PIN_LEFT_SERVO = 12
+PIN_RIGHT_SERVO = 13
+PIN_PEN_SERVO = 18
 
 class Servo(object):
-	def __init__(self, pin, dir='cw', trim=0):
+	def __init__(self, pi, pin, dir='cw', trim=0):
 		self.pin = pin
 		self.maxspd = 0.002
 		self.minspd = 0.001
@@ -15,35 +15,34 @@ class Servo(object):
 		self.minduty = 100 * self.minspd / self.period
 		self.dir = 1 if dir == 'cw' else -1
 		self.trim = trim
-
-		GPIO.setup(self.pin, GPIO.OUT)
-		self.pwm = GPIO.PWM(self.pin, 1 / self.period)
 		self.duty = 0
+		
+		self.pi = pi
+		self.pi.set_mode(self.pin, pigpio.OUTPUT)
+		self.pi.hardware_PWM(self.pin, 1 / self.period, 0.0)
 
 	def turn(self, i):
 		i += self.trim
 		i *= self.dir
 		i = (i + 1) / 2.0
-		duty = 100 * (self.minspd + i * (self.maxspd - self.minspd)) / self.period
+		duty = 1000000 * (self.minspd + i * (self.maxspd - self.minspd)) / self.period
 		self.duty = duty
-		self.pwm.start(duty)
+                self.pi.hardware_PWM(self.pin, 1 / self.period, duty)
 
 	def adjustDuty(self, dx):
 		dx *= self.dir
-		self.duty += dx
-		self.duty = min(max(self.minduty, self.duty), self.maxduty)
-		self.pwm.ChangeDutyCycle(self.duty)
-
+		self.pi.hardware_PWM(self.pin, 1 / self.period, self.duty + dx)
+                
 	def stop(self):
-		self.pwm.stop()
+                self.pi.hardware_PWM(self.pin, 0.0, 0.0)
 
 class Bot(object):
 	def __init__(self):
 		# initialize servos
-		GPIO.setmode(GPIO.BOARD)
-		self.leftServo = Servo(PIN_LEFT_SERVO, 'cw')
-		self.rightServo = Servo(PIN_RIGHT_SERVO, 'ccw', .04)
-		self.penServo = Servo(PIN_PEN_SERVO, 'cw')
+		self.pi_hw = pigpio.pi()
+		self.leftServo = Servo(self.pi_hw, PIN_LEFT_SERVO, 'cw')
+		self.rightServo = Servo(self.pi_hw, PIN_RIGHT_SERVO, 'ccw')
+		#self.penServo = Servo(self.pi_hw, PIN_PEN_SERVO, 'cw')
 		self.pen = False
 
 	def rotate(self, i):
@@ -58,11 +57,11 @@ class Bot(object):
 		self.leftServo.adjustDuty(dx / 2)
 		self.rightServo.adjustDuty(-dx / 2)
 
-	def penDown(self):
+	def penDown(self, i):
 		self.penServo.turn(i)
 		self.pen = True
 
-	def penUp(self):
+	def penUp(self, i):
 		self.penServo.turn(i)
 		self.pen = False
 

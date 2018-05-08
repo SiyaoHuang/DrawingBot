@@ -1,4 +1,6 @@
 from pmath import *
+import numpy as np
+from numpy.linalg import inv
 
 # constants
 TRIANGLE_UNITS	= 1.0
@@ -238,6 +240,37 @@ class PMap(object):
 		d = triangle.direction
 		direction = Vec2(self.surfaceX * d, self.surfaceY * d).normalize()
 		return (position, direction)
+	
+	def surfaceMapFast(self, p1, p2, p3):
+                self.setPoints(p1, p2, p3)
+                ramat = np.matrix([
+                    [self.surfaceX.x, self.surfaceY.x, -self.ra.x],
+                    [self.surfaceX.y, self.surfaceY.y, -self.ra.y],
+                    [self.surfaceX.z, self.surfaceY.z, -self.ra.z]
+                ])
+                rbmat = np.matrix([
+                    [self.surfaceX.x, self.surfaceY.x, -self.rb.x],
+                    [self.surfaceX.y, self.surfaceY.y, -self.rb.y],
+                    [self.surfaceX.z, self.surfaceY.z, -self.rb.z]
+                ])
+                rcmat = np.matrix([
+                    [self.surfaceX.x, self.surfaceY.x, -self.rc.x],
+                    [self.surfaceX.y, self.surfaceY.y, -self.rc.y],
+                    [self.surfaceX.z, self.surfaceY.z, -self.rc.z]
+                ])
+                o = np.array([[self.start.x], [self.start.y], [self.start.z]])
+                ra = ramat.I * o
+                rb = rbmat.I * o
+                rc = rcmat.I * o
+                ra = Vec2(ra[0], ra[1])
+                rb = Vec2(rb[0], rb[1])
+                rc = Vec2(rc[0], rc[1])
+                r = (ra + rb + rc) / 3
+                d = (rb - (ra + rc) / 2).normalize()
+                return (r, d)
+                
+                
+                
 
 ##p = PMap(epsx=0.001, epsy=0.01)
 # print p.perspectiveMap((407, 218), (447, 273), (493, 220))
