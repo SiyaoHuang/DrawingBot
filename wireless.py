@@ -1,6 +1,5 @@
 import socket
-import bot
-
+from bot import *
 # Commands
 BOT_FORWARD = 0
 BOT_ROTATE  = 1
@@ -48,25 +47,28 @@ class VirtualBotRX(object):
 		self.s.connect((ip, port))
 		self.buffer = ""
 		self.bot = Bot()
+		print 'Connected!'
 
 	def getCommand(self):
 		self.buffer += self.s.recv(1024)
 		if self.buffer != "":
 			pos = self.buffer.find('\n')
 			line = self.buffer[:pos]
-			self.buffer = self.buffer[:pos + 1]
+			self.buffer = self.buffer[pos + 1:]
 
 			cmd, arg = int(line.split()[0]), float(line.split()[1])
+			print 'command:', cmd, arg
 			return cmd, arg
 		return None
 
-	def exec(self):
+	def execute(self):
 		nxt = self.getCommand()
 		while nxt == None:
 			nxt = self.getCommand()
 
 		cmd, arg = nxt
 		if cmd == BOT_FORWARD:
+                        print 'executing forward'
 			self.bot.forward(arg)
 		elif cmd == BOT_ROTATE:
 			self.bot.rotate(arg)
