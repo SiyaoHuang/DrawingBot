@@ -56,8 +56,8 @@ class VirtualBotRX(object):
 			line = self.buffer[:pos]
 			self.buffer = self.buffer[pos + 1:]
 
-			cmd, arg = int(line.split()[0]), float(line.split()[1])
-			print 'command:', cmd, arg
+			cmd, arg = line.split()
+			print 'command:', int(cmd), float(arg)
 			return cmd, arg
 		return None
 
