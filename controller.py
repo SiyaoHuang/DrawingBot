@@ -4,6 +4,9 @@ from wireless import *
 from imageprocessor import *
 import time
 
+IP_ADDR = '192.168.43.28'
+PORT = 5005
+
 # This class provides high level actions of the robot, primarily 
 # going towards a target point. It uses the image processor in
 # conjunction with the pmap class to find the robot's location 
@@ -12,7 +15,7 @@ import time
 class Controller(object):
 	def __init__(self, epsxy=1, epst=0.1):
 		self.imageprocessor = ImageProcessor()
-		self.bot = VirtualBot('localhost', 5005)
+		self.bot = VirtualBotTX(IP_ADDR, PORT)
 		self.pmap = PMap(epsx=0.0001, epsy=0.01)
 		self.position = None
 		self.direction = None
