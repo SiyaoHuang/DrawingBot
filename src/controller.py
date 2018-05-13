@@ -96,7 +96,7 @@ class Controller(object):
 
 			# Rotate for some time
 			self.bot.rotate(-self.rspeed)
-			time.sleep(1.1)
+			time.sleep(1)
 
 			hit += 1
 
