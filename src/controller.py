@@ -35,7 +35,7 @@ class Controller(object):
 		self.pspeed = 0.1
 		self.upspeed = 0.15
 		self.dnspeed = -0.15
-		self.rtrim = -0.07
+		self.rtrim = -0.065
 		self.ltrim = 0
 		self.pdsleep = 0.4
 		self.pusleep = 0.62
