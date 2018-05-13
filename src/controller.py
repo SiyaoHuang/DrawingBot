@@ -168,7 +168,7 @@ class Controller(object):
 		self.setVector()
 		targetDirection = (target - self.position).normalize()
 		self.bot.rotate(self.rspeed)
-		while math.acos(self.direction * targetDirection) > epst:
+		while math.acos(self.direction * targetDirection) > self.epst:
 			self.setVector()
 			targetDirection = (target - self.position).normalize()
 
