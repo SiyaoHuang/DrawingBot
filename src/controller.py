@@ -22,6 +22,7 @@ class Controller(object):
 		self.direction = None
 		self.epsxy = 1.75
 		self.epst = 40 * (2 * 3.141592 / 360)
+		self.epss = 0.02
 
 		# Calibrate fields
 		self.framex = 0.20
@@ -173,7 +174,7 @@ class Controller(object):
 			targetDirection = (target - self.position).normalize()
 
 		# Rotate in small steps until just passed
-		while targetDirection.cross(self.direction) > 0:
+		while targetDirection.cross(self.direction) > self.epss:
 			self.bot.rotateAdjust(self.raspeed)
 			self.setVector()
 			targetDirection = (target - self.position).normalize()
