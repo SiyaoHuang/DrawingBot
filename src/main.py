@@ -12,15 +12,12 @@ star = [
 ]
 
 box = [
+	(0.0,  0.0),
 	(4.0,  0.0),
 	(4.0, -4.0),
 	(0.0, -4.0),
-	(0.0,  0.0),
+	(0.0,  0.0)
 ]
 
 c = Controller()
-c.bot.forward(c.fspeed)
-time.sleep(4)
-c.bot.stop()
-sys.exit(0)
 c.drawPoints(box)
