@@ -205,7 +205,7 @@ class Controller(object):
 
 			# Adjust trajectory based on error
 			self.bot.adjust(scale * att * err)
-		
+
 		# Move towards target in small increments until just passed
 		while targetDirection * self.direction > 0:
 			self.bot.forwardAdjust(self.fspeed)

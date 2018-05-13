@@ -20,4 +20,3 @@ box = [
 
 c = Controller()
 c.drawPoints(box)
-
