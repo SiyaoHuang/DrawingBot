@@ -21,7 +21,7 @@ class Controller(object):
 		self.position = None
 		self.direction = None
 		self.epsxy = 1.75
-		self.epst = 40 * (2 * 3.141592 / 360)
+		self.epst = 45 * (2 * 3.141592 / 360)
 		self.epss = 0.02
 
 		# Calibrate fields
