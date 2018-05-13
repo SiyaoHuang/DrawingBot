@@ -198,7 +198,7 @@ class Controller(object):
 			self.setVector()
 			sign = 1 if targetDirection.cross(self.direction) < 0 else -1
 			err = sign * angle
-			scale = 32000
+			scale = 12000
 			att = min(self.position.dist_to(target), 4)
 
 			# Adjust trajectory based on error
