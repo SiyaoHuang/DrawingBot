@@ -21,11 +21,11 @@ class Controller(object):
 		self.position = None
 		self.direction = None
 		self.epsxy = 1.75
-		self.epst = 30 * (2 * 3.141592 / 360)
+		self.epst = 40 * (2 * 3.141592 / 360)
 
 		# Calibrate fields
-		self.framex = 0.15
-		self.framey = 0.15
+		self.framex = 0.20
+		self.framey = 0.20
 		self.calibrated = False
 
 		# Bot parameters
@@ -196,10 +196,10 @@ class Controller(object):
 			cvec = Vec3(self.direction.x, self.direction.y, 0.0).normalize()
 			
 			# Calculate error
-			dot = tvec * cvec
+			angle = math.acos(tvec * cvec)
 			self.setVector()
 			sign = 1 if cvec.cross(tvec).z > 0 else -1
-			err = sign * (1 - dot)
+			err = sign * angle
 			scale = 32000
 			att = min(self.position.dist_to(target), 4)
 
