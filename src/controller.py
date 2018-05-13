@@ -192,13 +192,11 @@ class Controller(object):
 			# Get direction vector to target
 			self.setVector()
 			targetDirection = (target - self.position).normalize()
-			tvec = Vec3(targetDirection.x, targetDirection.y, 0.0).normalize()
-			cvec = Vec3(self.direction.x, self.direction.y, 0.0).normalize()
 			
 			# Calculate error
 			angle = math.acos(tvec * cvec)
 			self.setVector()
-			sign = 1 if cvec.cross(tvec).z > 0 else -1
+			sign = 1 if targetDirection.cross(self.direction) > 0 else -1
 			err = sign * angle
 			scale = 32000
 			att = min(self.position.dist_to(target), 4)
