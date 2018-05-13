@@ -96,7 +96,7 @@ class Controller(object):
 
 			# Rotate for some time
 			self.bot.rotate(-self.rspeed)
-			time.sleep(1)
+			time.sleep(1.5)
 
 			hit += 1
 
@@ -217,7 +217,6 @@ class Controller(object):
 
 	def drawPoints(self, points):
 		# Calibrate pmap for the surface normal
-		self.setupBot()
 		self.calibrate()
 
 		# Draw points one by one
