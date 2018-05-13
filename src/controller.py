@@ -37,7 +37,7 @@ class Controller(object):
 		self.dnspeed = -0.15
 		self.rtrim = -0.095
 		self.ltrim = 0
-		self.pdsleep = 0.3
+		self.pdsleep = 0.4
 		self.pusleep = 0.62
 		self.setupBot()
 
@@ -178,8 +178,6 @@ class Controller(object):
 			self.setVector()
 			targetDirection = (target - self.position).normalize()
 			print "Rotation error:", targetDirection.cross(self.direction)
-		self.bot.stop()
-		time.sleep(2)
 
 		# Put pen down or up
 		if draw and not self.bot.pen:
