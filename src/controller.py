@@ -194,7 +194,7 @@ class Controller(object):
 			targetDirection = (target - self.position).normalize()
 			
 			# Calculate error
-			angle = math.acos(tvec * cvec)
+			angle = math.acos(targetDirection * self.direction)
 			self.setVector()
 			sign = 1 if targetDirection.cross(self.direction) > 0 else -1
 			err = sign * angle
