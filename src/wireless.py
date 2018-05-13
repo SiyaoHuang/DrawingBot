@@ -82,32 +82,42 @@ class VirtualBotRX(object):
 		if line == '':
 			sys.exit(0)
 		cmd, arg = line.split()
-		print 'command:', int(cmd), float(arg)
 		return int(cmd), float(arg)
 
-	def execute(self):
-		nxt = self.getCommand()
-		while nxt == None:
-			nxt = self.getCommand()
-
-		cmd, arg = nxt
+	def execute(self, cmd):
+		cmd, arg = cmd
 		if cmd == BOT_FORWARD:
+			print "BOT_FORWARD:", arg
 			self.bot.forward(arg)
 		elif cmd == BOT_ROTATE:
+			print "BOT_ROTATE:", arg
 			self.bot.rotate(arg)
 		elif cmd == BOT_STOP:
+			print "BOT_STOP:", arg
 			self.bot.stop()
 		elif cmd == BOT_ADJUST:
+			print "BOT_ADJUST:", arg
 			self.bot.adjust(arg)
 		elif cmd == BOT_PENUP:
+			print "BOT_PENUP:", arg
 			self.bot.penUp(arg)
 		elif cmd == BOT_PENDOWN:
+			print "BOT_PENDOWN:", arg
 			self.bot.penDown(arg)
 		elif cmd == BOT_ROTATE_ADJUST:
+			print "BOT_ROTATE_ADJUST:", arg
 			self.bot.rotateAdjust(arg)
 		elif cmd == BOT_FORWARD_ADJUST:
+			print "BOT_FORWARD_ADJUST:", arg
 			self.bot.forwardAdjust(arg)
 		elif cmd == BOT_TRIM_LEFT:
+			print "BOT_TRIM_LEFT:", arg
 			self.bot.trimLeft(arg)
 		elif cmd == BOT_TRIM_RIGHT:
+			print "BOT_TRIM_RIGHT:", arg
 			self.bot.trimRight(arg)
+
+	def run(self):
+		while True:
+			cmd = self.getCommand()
+			self.execute(cmd)

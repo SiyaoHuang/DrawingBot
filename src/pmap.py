@@ -8,7 +8,7 @@ DISTANCE_TO_CAM = 14.625
 P2U				= 15.0 / 361.411
 DISTANCE_MAX	= 100.0
 IMG_WIDTH		= 416
-IMG_HEIGHT		= 320 
+IMG_HEIGHT		= 320
 
 class Triangle(object):
 	def __init__(self, r, g, b):

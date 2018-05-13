@@ -1,8 +1,7 @@
 import pmap
 from pmap import *
 import wireless
-from wireless import *
-from imageprocessor import *
+import imageprocessor
 import time
 import math
 
@@ -12,18 +11,23 @@ import math
 # and control the robot accordingly. It also performs the 
 # calibrations necessary to configure the pmap surface normal.
 class Controller(object):
-	def __init__(self, epsxy=0.5, epst=2):
-		self.imageprocessor = ImageProcessor()
-		self.bot = VirtualBotTX()
-		self.pmap = PMap(epsx=0.0001, epsy=0.01)
+	def __init__(self):
+		self.imageprocessor = imageprocessor.ImageProcessor()
+		self.bot = wireless.VirtualBotTX()
+		self.pmap = pmap.PMap(epsx=0.0001, epsy=0.01)
 
 		# Position fields
 		self.position = None
 		self.direction = None
-		self.epsxy = epsxy
-		self.epst = epst * 2 * 3.141592 / 360
+		self.epsxy = 1.75
+		self.epst = 30 * (2 * 3.141592 / 360)
 
-		# Bot fields
+		# Calibrate fields
+		self.framex = 0.15
+		self.framey = 0.15
+		self.calibrated = False
+
+		# Bot parameters
 		self.rspeed = -0.2
 		self.raspeed = -0.35
 		self.fspeed = 0.4
@@ -32,15 +36,23 @@ class Controller(object):
 		self.dnspeed = -0.15
 		self.rtrim = -0.095
 		self.ltrim = 0
-
 		self.setupBot()
 
+	# Sets initial parameters of the bot
 	def setupBot(self):
 		self.bot.trimRight(self.rtrim)
 		self.bot.trimLeft(self.ltrim)
+		self.bot.penDown(c.dnspeed)
+		time.sleep(2)
+		self.bot.penUp(c.upspeed)
+		time.sleep(2)
 
 	# Determines the plane of the paper in 3D space
 	def calibrate(self):
+		if self.calibrated:
+			print "Skipping calibration."
+			return
+
 		print "Establishing start position..."
 		start = self.imageprocessor.getPoints()
 		while start == None:
@@ -53,7 +65,7 @@ class Controller(object):
 		
 		def inBoundary(points):
 			x, y = points[1]
-			framex, framey = 0.15, 0.15
+			framex, framey = self.framex, self.framey
 			top = y > framey * pmap.IMG_HEIGHT
 			bottom = y < (1 - framey) * pmap.IMG_HEIGHT
 			left = x > framex * pmap.IMG_WIDTH
@@ -94,6 +106,7 @@ class Controller(object):
 
 		# Set starting position
 		self.position, self.direction = self.pmap.surfaceMap(p1i, p2i, p3i)
+		self.calibrated = True
 
 		print "Finished!"
 
@@ -101,6 +114,10 @@ class Controller(object):
 	# and sets the initial position and direction of the bot.
 	# Calibrate without the bot.
 	def calibrateManual(self):
+		if self.calibrated:
+			print "Skipping calibration."
+			return
+
 		# Get start position
 		start = self.imageprocessor.getPoints()
 		while start == None:
@@ -115,7 +132,6 @@ class Controller(object):
 				continue
 			p1, p2, p3 = pos
 			self.pmap.addCalibration(p1, p2, p3)
-			time.sleep(.05)
 			
 		# Set surface normal
 		self.pmap.calibrateSurfaceNormal()
@@ -123,6 +139,7 @@ class Controller(object):
 
 		# Set position and direction of the bot
 		self.position, self.direction = self.pmap.surfaceMap(p1i, p2i, p3i)
+		self.calibrated = True
 
 	# Continually prints out the 2D position of the bot on the surface.
 	def printVector(self):
@@ -142,24 +159,23 @@ class Controller(object):
 		p1i, p2i, p3i = start
 		self.position, self.direction = self.pmap.surfaceMapFast(p1i, p2i, p3i)
 
-	# Moves the bot to a certain target coordinate until it is within
-	# a distance of self.epsxy.
+	# Moves the bot to a certain target coordinate.
 	def gotoTarget(self, target, draw=False):
 		# Rotate bot towards the target
 		self.setVector()
 		targetDirection = (target - self.position).normalize()
 		self.bot.rotate(self.rspeed)
-		while math.acos(self.direction * targetDirection) > 30 * 2 * 3.141592 / 360:
+		while math.acos(self.direction * targetDirection) > epst:
 			self.setVector()
 			targetDirection = (target - self.position).normalize()
 
-		# Rotate in small steps
+		# Rotate in small steps until just passed
 		while targetDirection.cross(self.direction) > 0:
 			self.bot.rotateAdjust(self.raspeed)
 			time.sleep(.25)
 			self.setVector()
 			targetDirection = (target - self.position).normalize()
-			print "Cross product:", targetDirection.cross(self.direction)
+			print "Rotation error:", targetDirection.cross(self.direction)
 
 		# Put pen down or up
 		if draw and not self.bot.pen:
@@ -171,7 +187,7 @@ class Controller(object):
 
 		# Move towards target point
 		self.bot.forward(self.fspeed)
-		while self.position.dist_to(target) > self.epsxy * 3.5:
+		while self.position.dist_to(target) > self.epsxy:
 
 			# Get direction vector to target
 			self.setVector()
@@ -196,6 +212,18 @@ class Controller(object):
 			time.sleep(0.25)
 			self.setVector()
 			targetDirection = (target - self.position).normalize()
-			print "Dot product:", targetDirection * self.direction
+			print "Position error:", targetDirection * self.direction
 		
 		self.bot.stop()
+
+	def drawPoints(self, points):
+		# Calibrate pmap for the surface normal
+		self.setupBot()
+		self.calibrate()
+
+		# Draw points one by one
+		self.gotoTarget(Vec2(0.0, 0.0))
+		self.gotoTarget(Vec2(points[0][0], points[0][1]))
+		for i in range(1, len(points)):
+			self.gotoTarget(Vec2(points[i][0], points[i][1]), draw=True)
+		self.gotoTarget(Vec2(0.0, 0.0))
