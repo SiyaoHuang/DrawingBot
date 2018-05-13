@@ -29,4 +29,4 @@ line = [
 ]
 
 c = Controller()
-c.drawPoints(line)
+c.drawPoints(box)
