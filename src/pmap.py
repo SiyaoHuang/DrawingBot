@@ -4,11 +4,11 @@ from numpy.linalg import inv
 
 # constants
 TRIANGLE_UNITS	= 1.0
-DISTANCE_TO_CAM = 11.0 / TRIANGLE_UNITS
-P2U				= 8.5 / 526.6925099144661
+DISTANCE_TO_CAM = 14.625
+P2U				= 15.0 / 361.411
 DISTANCE_MAX	= 100.0
-IMG_WIDTH		= 832
-IMG_HEIGHT		= 624
+IMG_WIDTH		= 416
+IMG_HEIGHT		= 320 
 
 class Triangle(object):
 	def __init__(self, r, g, b):
@@ -234,7 +234,7 @@ class PMap(object):
 		direction = Vec2(self.surfaceX * d, self.surfaceY * d).normalize()
 		return (position, direction)
 	
-	# Does the same thing as surfaceMap in O(1) time.  
+	# Does the same thing as surfaceMap in O(1) time.
 	def surfaceMapFast(self, p1, p2, p3):
 		self.setPoints(p1, p2, p3)
 		ramat = np.matrix([

@@ -4,17 +4,21 @@ from picamera.array import PiRGBArray
 from picamera import PiCamera
 import imutils
 
-# Constants
+# Image thresholding constants
 YMIN, YMAX   =  23,  40
 GMIN, GMAX   =  45,  80
 BMIN, BMAX   = 100, 120
-SMIN, SMAX   =  30, 255
-VYMIN, VYMAX =   0, 255
+SYMIN, SYMAX =  70, 255
+SGMIN, SGMAX =  30, 255
+SBMIN, SBMAX =  70, 255
+VYMIN, VYMAX =  60, 255
 VGMIN, VGMAX =   0, 255
 VBMIN, VBMAX =   0, 255
-SIZEMIN	     =  20 * 15
+SIZEMIN	     =  20 * 15 / 4.0
 SIZEMAX      =  70 * 60
-RES          = 832, 624
+
+# Camera constants
+RES          = 416, 320
 FRAMERATE    =       30
 
 # This class handles all image processing including taking a picture
@@ -66,9 +70,9 @@ class ImageProcessor(object):
 		# read in image and threshold to get binary images
 		imagergb = self.getImage()
 		image = cv2.cvtColor(imagergb, cv2.COLOR_BGR2HSV)
-		masky = cv2.inRange(image, np.array([YMIN,SMIN,VYMIN]),np.array([YMAX,SMAX,VYMAX]))
-		maskg = cv2.inRange(image, np.array([GMIN,SMIN,VGMIN]),np.array([GMAX,SMAX,VGMAX]))
-		maskb = cv2.inRange(image, np.array([BMIN,70,VBMIN]),np.array([BMAX,SMAX,VBMAX]))
+		masky = cv2.inRange(image, np.array([YMIN,SYMIN,VYMIN]),np.array([YMAX,SYMAX,VYMAX]))
+		maskg = cv2.inRange(image, np.array([GMIN,SGMIN,VGMIN]),np.array([GMAX,SGMAX,VGMAX]))
+		maskb = cv2.inRange(image, np.array([BMIN,SBMIN,VBMIN]),np.array([BMAX,SBMAX,VBMAX]))
 
 		# image processing to find center of yellow, green, and blue circles
 		cntsy = cv2.findContours(masky.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -111,17 +115,18 @@ class ImageProcessor(object):
 						m = ij + jk + ki
 						triple = (ic, jc, kc)
 
+		# Write to file if self.write is true
 		y, g, b = triple
 		if self.write:
 			imagergb = imagergb.copy()
 			imagergb[y[1]][y[0]] = [0, 0, 255]
 			imagergb[g[1]][g[0]] = [0, 0, 255]
 			imagergb[b[1]][b[0]] = [0, 0, 255]
-			cv2.imwrite("output/imagergb%i.jpg" % self.counter,imagergb)
-			cv2.imwrite("output/image%i.jpg" % self.counter,image)
-			cv2.imwrite("output/masky%i.jpg" % self.counter,masky)
-			cv2.imwrite("output/maskg%i.jpg" % self.counter,maskg)
-			cv2.imwrite("output/maskb%i.jpg" % self.counter,maskb)
+			cv2.imwrite("../data/imagergb%i.jpg" % self.counter,imagergb)
+			cv2.imwrite("../data/image%i.jpg" % self.counter,image)
+			cv2.imwrite("../data/masky%i.jpg" % self.counter,masky)
+			cv2.imwrite("../data/maskg%i.jpg" % self.counter,maskg)
+			cv2.imwrite("../data/maskb%i.jpg" % self.counter,maskb)
 			self.counter += 1
 
 		return triple

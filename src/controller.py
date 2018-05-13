@@ -1,8 +1,10 @@
 import pmap
 from pmap import *
+import wireless
 from wireless import *
 from imageprocessor import *
 import time
+import math
 
 IP_ADDR = '192.168.43.28'
 PORT = 5005
@@ -13,17 +15,32 @@ PORT = 5005
 # and control the robot accordingly. It also performs the 
 # calibrations necessary to configure the pmap surface normal.
 class Controller(object):
-	def __init__(self, epsxy=1, epst=0.1):
+	def __init__(self, epsxy=0.5, epst=2):
 		self.imageprocessor = ImageProcessor()
-		self.bot = VirtualBotTX(IP_ADDR, PORT)
+		self.bot = VirtualBotTX()
 		self.pmap = PMap(epsx=0.0001, epsy=0.01)
+
+		# Position fields
 		self.position = None
 		self.direction = None
 		self.epsxy = epsxy
-		self.epst = epst
-		self.rspeed = 0.3
-		self.fspeed = 0.3
+		self.epst = epst * 2 * 3.141592 / 360
+
+		# Bot fields
+		self.rspeed = -0.2
+		self.raspeed = -0.35
+		self.fspeed = 0.4
 		self.pspeed = 0.1
+		self.upspeed = 0.15
+		self.dnspeed = -0.15
+		self.rtrim = -0.095
+		self.ltrim = 0
+
+		self.setupBot()
+
+	def setupBot(self):
+		self.bot.trimRight(self.rtrim)
+		self.bot.trimLeft(self.ltrim)
 
 	# Determines the plane of the paper in 3D space
 	def calibrate(self):
@@ -37,26 +54,40 @@ class Controller(object):
 		# Calibrate surface normal
 		print "Calibrating surface normal..."
 		
-		self.bot.forward(self.fspeed)
-		curr = start
-		while max(curr, key=lambda x: x[1])[1] > 0.35 * pmap.IMG_HEIGHT:
-			curr = self.imageprocessor.getPoints()
-			while curr == None:
-				curr = self.imageprocessor.getPoints()
+		def inBoundary(points):
+			x, y = points[1]
+			framex, framey = 0.15, 0.15
+			top = y > framey * pmap.IMG_HEIGHT
+			bottom = y < (1 - framey) * pmap.IMG_HEIGHT
+			left = x > framex * pmap.IMG_WIDTH
+			right = x < (1 - framex) * pmap.IMG_WIDTH
+			return top and bottom and left and right
 
-			p1, p2, p3 = curr
-			self.pmap.addCalibration(p1, p2, p3)
+		# Hit the boundary 5 times
+		hit = 0
+		while hit < 5:
 
-		self.bot.rotate(self.rspeed)
-		time.sleep(1.2)
-		self.bot.forward(self.fspeed)
-		while max(curr, key=lambda x: x[0])[0] < 0.60 * pmap.IMG_WIDTH:
-			curr = self.imageprocessor.getPoints()
-			while curr == None:
-				curr = self.imageprocessor.getPoints()
+			# Get points
+			points = self.imageprocessor.getPoints()
+			while points == None:
+				points = self.imageprocessor.getPoints()
 
-			p1, p2, p3 = curr
-			self.pmap.addCalibration(p1, p2, p3)
+			# Keep going forward until a boundary is hit
+			self.bot.forward(self.fspeed)
+			time.sleep(1)
+			while inBoundary(points):
+				p1, p2, p3 = points
+				self.pmap.addCalibration(p1, p2, p3)
+				points = self.imageprocessor.getPoints()
+				while points == None:
+					points = self.imageprocessor.getPoints()
+
+			# Rotate for some time
+			self.bot.rotate(-self.rspeed)
+			time.sleep(1)
+
+			hit += 1
+
 		self.bot.stop()
 
 		# Set surface normal
@@ -120,35 +151,54 @@ class Controller(object):
 		# Rotate bot towards the target
 		self.setVector()
 		targetDirection = (target - self.position).normalize()
-		self.bot.rotate(-self.rspeed)
-		print "dir error:"
-		while abs(1 - self.direction * targetDirection) > self.epst:
+		self.bot.rotate(self.rspeed)
+		while math.acos(self.direction * targetDirection) > 30 * 2 * 3.141592 / 360:
 			self.setVector()
-			print abs(1 - self.direction * targetDirection)
+			targetDirection = (target - self.position).normalize()
 
-		# Put pen down
-		if draw:
-			self.bot.penDown(self.pspeed)
+		# Rotate in small steps
+		while targetDirection.cross(self.direction) > 0:
+			self.bot.rotateAdjust(self.raspeed)
+			time.sleep(.25)
+			self.setVector()
+			targetDirection = (target - self.position).normalize()
+			print "Cross product:", targetDirection.cross(self.direction)
+
+		# Put pen down or up
+		if draw and not self.bot.pen:
+			self.bot.penDown(self.dnspeed)
+			time.sleep(1.5)
+		elif not draw and self.bot.pen:
+			self.bot.penUp(self.upspeed)
+			time.sleep(1.5)
 
 		# Move towards target point
-		self.bot.stop()
 		self.bot.forward(self.fspeed)
-		while self.position.dist_to(target) > self.epsxy:
+		while self.position.dist_to(target) > self.epsxy * 3.5:
+
 			# Get direction vector to target
 			self.setVector()
 			targetDirection = (target - self.position).normalize()
 			tvec = Vec3(targetDirection.x, targetDirection.y, 0.0).normalize()
 			cvec = Vec3(self.direction.x, self.direction.y, 0.0).normalize()
-
+			
 			# Calculate error
+			dot = tvec * cvec
+			self.setVector()
 			sign = 1 if cvec.cross(tvec).z > 0 else -1
-			err = sign * (1 - tvec * cvec)
-			print err
-			scale = 100000
+			err = sign * (1 - dot)
+			scale = 32000
+			att = min(self.position.dist_to(target), 4)
 
 			# Adjust trajectory based on error
-			self.bot.adjust(scale * err)
-			
-		if draw:
-			self.bot.penUp(self.pspeed)
+			self.bot.adjust(scale * att * err)
+		
+		# Move towards target in small increments until just passed
+		while targetDirection * self.direction > 0:
+			self.bot.forwardAdjust(self.fspeed)
+			time.sleep(0.25)
+			self.setVector()
+			targetDirection = (target - self.position).normalize()
+			print "Dot product:", targetDirection * self.direction
+		
 		self.bot.stop()

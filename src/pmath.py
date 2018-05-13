@@ -3,7 +3,7 @@ class Vec3(object):
 		self.x = float(x)
 		self.y = float(y)
 		self.z = float(z)
-            
+
 	def clone(self):
 		return Vec3(self.x, self.y, self.z)
 
@@ -63,7 +63,7 @@ class Vec2(object):
 		return Vec2(self.x, self.y)
 
 	def cross(self, other):
-		pass
+		return self.x * other.y - other.x * self.y
 
 	def mag(self):
 		return (self.x ** 2 + self.y ** 2) ** .5
