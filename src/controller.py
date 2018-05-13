@@ -196,7 +196,7 @@ class Controller(object):
 			# Calculate error
 			angle = math.acos(targetDirection * self.direction)
 			self.setVector()
-			sign = 1 if targetDirection.cross(self.direction) > 0 else -1
+			sign = 1 if targetDirection.cross(self.direction) < 0 else -1
 			err = sign * angle
 			scale = 32000
 			att = min(self.position.dist_to(target), 4)
