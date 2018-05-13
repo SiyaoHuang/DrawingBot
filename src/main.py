@@ -20,6 +20,6 @@ box = [
 ]
 
 c = Controller()
-c.bot.penDown(c.pdspeed)
+c.bot.penDown(c.dnspeed)
 sys.exit(0)
 c.drawPoints(box)
