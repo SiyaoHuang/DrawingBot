@@ -96,7 +96,7 @@ class Bot(object):
 		time.sleep(self.pusleep)
 		self.penServo.stop()
 
-	def penDownSLeep(self, i):
+	def penDownSleep(self, i):
 		self.pdsleep = i
 
 	def penUpSleep(self, i):
