@@ -13,6 +13,8 @@ BOT_ROTATE_ADJUST  = 6
 BOT_FORWARD_ADJUST = 7
 BOT_TRIM_LEFT      = 8
 BOT_TRIM_RIGHT     = 9
+BOT_PU_SLEEP       = 10
+BOT_PD_SLEEP       = 11
 
 # Comm constants
 PACKET_SIZE        = 50
@@ -28,7 +30,7 @@ class VirtualBotTX(object):
 		self.s.bind((ip, port))
 		self.s.listen(1)
 		self.conn, self.addr = self.s.accept()
-		print 'Connected to:', self.addr
+		print "Connected to bot!"
 
 	def close(self):
 		self.conn.close()
@@ -43,12 +45,14 @@ class VirtualBotTX(object):
 	
 	def rotateAdjust(self, i):
 		self.conn.send(self.makePacket(BOT_ROTATE_ADJUST, i))
+		time.sleep(0.25)
 
 	def forward(self, i):
 		self.conn.send(self.makePacket(BOT_FORWARD, i))
 	
 	def forwardAdjust(self, i):
 		self.conn.send(self.makePacket(BOT_FORWARD_ADJUST, i))
+		time.sleep(0.25)
 
 	def adjust(self, dx):
 		self.conn.send(self.makePacket(BOT_ADJUST, dx))
@@ -56,10 +60,18 @@ class VirtualBotTX(object):
 	def penDown(self, i):
 		self.conn.send(self.makePacket(BOT_PENDOWN, i))
 		self.pen = True
+		time.sleep(2)
 
 	def penUp(self, i):
 		self.conn.send(self.makePacket(BOT_PENUP, i))
 		self.pen = False
+		time.sleep(2)
+
+	def penDownSleep(self, i):
+		self.conn.send(self.makePacket(BOT_PD_SLEEP, i))
+
+	def penUpSleep(self, i):
+		self.conn.send(self.makePacket(BOT_PU_SLEEP, i))
 
 	def trimLeft(self, i):
 		self.conn.send(self.makePacket(BOT_TRIM_LEFT, i))
@@ -75,7 +87,7 @@ class VirtualBotRX(object):
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.s.connect((ip, port))
 		self.bot = Bot()
-		print 'Connected!'
+		print 'Connected to Pi!'
 
 	def getCommand(self):
 		line = self.s.recv(50)
@@ -116,6 +128,12 @@ class VirtualBotRX(object):
 		elif cmd == BOT_TRIM_RIGHT:
 			print "BOT_TRIM_RIGHT:", arg
 			self.bot.trimRight(arg)
+		elif cmd == BOT_PD_SLEEP:
+			print "BOT_PD_SLEEP:", arg
+			self.bot.penDownSleep(arg)
+		elif cmd == BOT_PU_SLEEP:
+			print "BOT_PU_SLEEP", arg
+			self.bot.penUpSleep(arg)
 
 	def run(self):
 		while True:

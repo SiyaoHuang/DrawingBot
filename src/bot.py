@@ -61,7 +61,8 @@ class Bot(object):
 		self.leftServo = Servo(pi_hw, PIN_LEFT_SERVO, 'cw')
 		self.rightServo = Servo(pi_hw, PIN_RIGHT_SERVO, 'ccw')
 		self.penServo = Servo(pi_hw, PIN_PEN_SERVO, 'cw', hw=False)
-		self.pen = False
+		self.pdsleep = 0.0
+		self.pusleep = 0.0
 
 	def rotate(self, i):
 		self.leftServo.turn(i)
@@ -87,15 +88,19 @@ class Bot(object):
 
 	def penDown(self, i):
 		self.penServo.turn(i)
-		self.pen = True
-		time.sleep(.3)
+		time.sleep(self.pdsleep)
 		self.penServo.stop()
 
 	def penUp(self, i):
 		self.penServo.turn(i)
-		self.pen = False
-		time.sleep(0.62)
+		time.sleep(self.pusleep)
 		self.penServo.stop()
+
+	def penDownSLeep(self, i):
+		self.pdsleep = i
+
+	def penUpSleep(self, i):
+		self.pusleep = i
 
 	def trimLeft(self, i):
 		self.leftServo.trim = i

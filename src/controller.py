@@ -12,6 +12,7 @@ import math
 # calibrations necessary to configure the pmap surface normal.
 class Controller(object):
 	def __init__(self):
+		# Main components
 		self.imageprocessor = imageprocessor.ImageProcessor()
 		self.bot = wireless.VirtualBotTX()
 		self.pmap = pmap.PMap(epsx=0.0001, epsy=0.01)
@@ -36,16 +37,18 @@ class Controller(object):
 		self.dnspeed = -0.15
 		self.rtrim = -0.095
 		self.ltrim = 0
+		self.pdsleep = 0.3
+		self.pusleep = 0.62
 		self.setupBot()
 
 	# Sets initial parameters of the bot
 	def setupBot(self):
 		self.bot.trimRight(self.rtrim)
 		self.bot.trimLeft(self.ltrim)
+		self.bot.penDownSleep(self.pdsleep)
+		self.bot.penUpSleep(self.pusleep)
 		self.bot.penDown(c.dnspeed)
-		time.sleep(2)
 		self.bot.penUp(c.upspeed)
-		time.sleep(2)
 
 	# Determines the plane of the paper in 3D space
 	def calibrate(self):
@@ -172,7 +175,6 @@ class Controller(object):
 		# Rotate in small steps until just passed
 		while targetDirection.cross(self.direction) > 0:
 			self.bot.rotateAdjust(self.raspeed)
-			time.sleep(.25)
 			self.setVector()
 			targetDirection = (target - self.position).normalize()
 			print "Rotation error:", targetDirection.cross(self.direction)
@@ -180,10 +182,8 @@ class Controller(object):
 		# Put pen down or up
 		if draw and not self.bot.pen:
 			self.bot.penDown(self.dnspeed)
-			time.sleep(1.5)
 		elif not draw and self.bot.pen:
 			self.bot.penUp(self.upspeed)
-			time.sleep(1.5)
 
 		# Move towards target point
 		self.bot.forward(self.fspeed)
@@ -209,7 +209,6 @@ class Controller(object):
 		# Move towards target in small increments until just passed
 		while targetDirection * self.direction > 0:
 			self.bot.forwardAdjust(self.fspeed)
-			time.sleep(0.25)
 			self.setVector()
 			targetDirection = (target - self.position).normalize()
 			print "Position error:", targetDirection * self.direction
