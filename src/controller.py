@@ -47,8 +47,8 @@ class Controller(object):
 		self.bot.trimLeft(self.ltrim)
 		self.bot.penDownSleep(self.pdsleep)
 		self.bot.penUpSleep(self.pusleep)
-		self.bot.penDown(c.dnspeed)
-		self.bot.penUp(c.upspeed)
+		self.bot.penDown(self.dnspeed)
+		self.bot.penUp(self.upspeed)
 
 	# Determines the plane of the paper in 3D space
 	def calibrate(self):
