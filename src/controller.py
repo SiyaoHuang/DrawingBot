@@ -220,6 +220,5 @@ class Controller(object):
 
 		# Draw points one by one
 		self.gotoTarget(Vec2(points[0][0], points[0][1]))
-		self.gotoTarget(Vec2(points[0][0], points[0][1]))
 		for i in range(1, len(points)):
 			self.gotoTarget(Vec2(points[i][0], points[i][1]), draw=True)
