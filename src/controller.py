@@ -87,7 +87,7 @@ class Controller(object):
 
 			# Keep going forward until a boundary is hit
 			self.bot.forward(self.fspeed)
-			time.sleep(0.4)
+			time.sleep(0.3)
 			while inBoundary(points):
 				p1, p2, p3 = points
 				self.pmap.addCalibration(p1, p2, p3)
