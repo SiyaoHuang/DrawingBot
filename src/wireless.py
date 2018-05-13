@@ -35,52 +35,53 @@ class VirtualBotTX(object):
 	def close(self):
 		self.conn.close()
 
-	def makePacket(self, cmd, arg):
+	def sendCommand(self, cmd, arg):
+		# Build and send packet
 		packet = "%i %f" % (cmd, arg)
 		packet += " " * (PACKET_SIZE - 1 - len(packet)) + '\n'
-		return packet
+		self.conn.send(packet)
 
 	def rotate(self, i):
-		self.conn.send(self.makePacket(BOT_ROTATE, i))
+		self.sendCommand(BOT_ROTATE, i)
 	
 	def rotateAdjust(self, i):
-		self.conn.send(self.makePacket(BOT_ROTATE_ADJUST, i))
+		self.sendCommand(BOT_ROTATE_ADJUST, i)
 		time.sleep(0.25)
 
 	def forward(self, i):
-		self.conn.send(self.makePacket(BOT_FORWARD, i))
+		self.sendCommand(BOT_FORWARD, i)
 	
 	def forwardAdjust(self, i):
-		self.conn.send(self.makePacket(BOT_FORWARD_ADJUST, i))
+		self.sendCommand(BOT_FORWARD_ADJUST, i)
 		time.sleep(0.25)
 
 	def adjust(self, dx):
-		self.conn.send(self.makePacket(BOT_ADJUST, dx))
+		self.sendCommand(BOT_ADJUST, dx)
 
 	def penDown(self, i):
-		self.conn.send(self.makePacket(BOT_PENDOWN, i))
+		self.sendCommand(BOT_PENDOWN, i)
 		self.pen = True
 		time.sleep(2)
 
 	def penUp(self, i):
-		self.conn.send(self.makePacket(BOT_PENUP, i))
+		self.sendCommand(BOT_PENUP, i)
 		self.pen = False
 		time.sleep(2)
 
 	def penDownSleep(self, i):
-		self.conn.send(self.makePacket(BOT_PD_SLEEP, i))
+		self.sendCommand(BOT_PD_SLEEP, i)
 
 	def penUpSleep(self, i):
-		self.conn.send(self.makePacket(BOT_PU_SLEEP, i))
+		self.sendCommand(BOT_PU_SLEEP, i)
 
 	def trimLeft(self, i):
-		self.conn.send(self.makePacket(BOT_TRIM_LEFT, i))
+		self.sendCommand(BOT_TRIM_LEFT, i)
 
 	def trimRight(self, i):
-		self.conn.send(self.makePacket(BOT_TRIM_RIGHT, i))
+		self.sendCommand(BOT_TRIM_RIGHT, i)
 
 	def stop(self):
-		self.conn.send(self.makePacket(BOT_STOP, 0))
+		self.sendCommand(BOT_STOP, 0)
 
 class VirtualBotRX(object):
 	def __init__(self, ip=IP_ADDR, port=PORT):
