@@ -44,10 +44,10 @@ class PMap(object):
 
 		# Surface variables
 		self.calibrate = []
-		self.start = None
-		self.surfaceNormal = None
-		self.surfaceX = None
-		self.surfaceY = None
+		self.start = None #Vec3(-4.001322, -1.373553, 10.475298)#None
+		self.surfaceNormal = None #Vec3(0.105336, 0.112570, -0.983134)#None
+		self.surfaceX = None #Vec3(-0.994370, 0.016962, -0.104598)#None
+		self.surfaceY = None #Vec3(0.004925, 0.993437, 0.114278)#None
 		self.framex = 0.15
 		self.framey = 0.15
 
@@ -301,6 +301,12 @@ class PMap(object):
 		points = map(self.surfaceMapSingle, points)
 		bl, tl, tr, br = points
 
+		print "bl", bl
+		print "tl", tl
+		print "tr", tr
+		print "br", br
+		print
+
 		# Find bounds and adjust
 		bl.x = max(bl.x, tl.x)
 		tl.x = max(bl.x, tl.x)
@@ -323,11 +329,16 @@ class PMap(object):
 		bl, tr = self.findBounds()
 		width, height = abs(bl.x - tr.x), abs(bl.y - tr.y)
 		if float(width) / height > float(PIC_WIDTH) / PIC_HEIGHT:
-			width = height * (PIC_WIDTH / PIC_HEIGHT)
+			width = height * (float(PIC_WIDTH) / PIC_HEIGHT)
 		else:
-			height = width * (PIC_HEIGHT / PIC_WIDTH)
+			height = width * (float(PIC_HEIGHT) / PIC_WIDTH)
+
+		print PIC_WIDTH, PIC_HEIGHT
+		print width, height
 		tr = bl + Vec2(width, -height)
 
+		print "bl:", bl
+		print "tr:", tr
 		# Convert pixel points into surface coordinates
 		for i in range(len(points)):
 			x, y = points[i]

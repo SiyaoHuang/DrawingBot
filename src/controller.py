@@ -217,6 +217,9 @@ class Controller(object):
 	def drawPoints(self, points):
 		# Calibrate pmap for the surface normal
 		self.calibrate()
+		
+		# Convert points
+		points = self.pmap.mapPicture(points)
 
 		# Draw points one by one
 		self.gotoTarget(Vec2(points[0][0], points[0][1]))

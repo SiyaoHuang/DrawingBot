@@ -2,6 +2,7 @@ import sys, time, pygame
 import math
 import os
 import RPi.GPIO as GPIO
+from controller import *
 
 ##os.putenv('SDL_VIDEODRIVER', 'fbcon') # Display on piTFT
 ##os.putenv('SDL_FBDEV', '/dev/fb1')
@@ -34,8 +35,9 @@ screen = pygame.display.set_mode(size)
 ##text_surface_coords = my_font.render(text_coords, True, WHITE)
 ##text_coords_rect = text_surface_coords.get_rect(center=(160, 120))
 points = []
-
-while True:
+start = time.time()
+c = Controller()
+while time.time() - start < 10:
     if not GPIO.input(22):
         sys.exit()
     for event in pygame.event.get():
@@ -60,6 +62,8 @@ while True:
     pygame.display.flip()
 
     time.sleep(0.01)
+
+c.drawPoints()
 
 GPIO.cleanup()
 sys.exit()
