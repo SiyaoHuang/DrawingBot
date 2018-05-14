@@ -282,9 +282,9 @@ class PMap(object):
 
 		# Intersect with surface
 		rmat = np.matrix([
-			[self.surfaceX.x, self.surfaceY.x, -self.r.x],
-			[self.surfaceX.y, self.surfaceY.y, -self.r.y],
-			[self.surfaceX.z, self.surfaceY.z, -self.r.z]
+			[self.surfaceX.x, self.surfaceY.x, -r.x],
+			[self.surfaceX.y, self.surfaceY.y, -r.y],
+			[self.surfaceX.z, self.surfaceY.z, -r.z]
 		])
 		o = np.array([[self.start.x], [self.start.y], [self.start.z]])
 		r = rmat.I * o
