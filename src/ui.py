@@ -57,8 +57,6 @@ while True:
         pygame.draw.circle(screen, black, i, 2)
     if len(points) > 1:
         pygame.draw.lines(screen, black, False, points, 2)
-##    screen.blit(text_surface_coords, text_coords_rect)
-##    screen.blit(text_surface,rect)
     pygame.display.flip()
 
     time.sleep(0.01)

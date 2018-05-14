@@ -29,4 +29,16 @@ line = [
 ]
 
 c = Controller()
-c.drawPoints(box)
+c.calibrate()
+points = c.pmap.mapPicture([
+	(72, 146),
+	(69, 45),
+	(212, 43),
+	(215, 137),
+	(72, 146)
+])
+
+for i in points:
+	print i
+
+#c.drawPoints(box)

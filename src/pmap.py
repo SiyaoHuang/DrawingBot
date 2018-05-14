@@ -9,6 +9,8 @@ P2U				= 15.0 / 361.411
 DISTANCE_MAX	= 100.0
 IMG_WIDTH		= 416
 IMG_HEIGHT		= 320
+PIC_WIDTH       = 320
+PIC_HEIGHT      = 240
 
 class Triangle(object):
 	def __init__(self, r, g, b):
@@ -46,6 +48,8 @@ class PMap(object):
 		self.surfaceNormal = None
 		self.surfaceX = None
 		self.surfaceY = None
+		self.framex = 0.15
+		self.framey = 0.15
 
 	# Input vectors in pixel coordinates
 	def setPoints(self, p1, p2, p3):
@@ -262,3 +266,72 @@ class PMap(object):
 		position = (ra + rb + rc) / 3
 		direction = (rb - (ra + rc) / 2).normalize()
 		return (position, direction)
+
+	def surfaceMapSingle(self, p):
+		px, py = p
+
+		# Transform pixel coordinates to be centered at the origin
+		px, py = px - float(IMG_WIDTH / 2), float(IMG_HEIGHT / 2) - py
+
+		# Convert pixels to units and set z coordinate
+		p = P2U * Vec3(px, py, 0.0)
+		p.z = DISTANCE_TO_CAM
+
+		# Normalize and use as direction vectors
+		r = p.normalize()
+
+		# Intersect with surface
+		rmat = np.matrix([
+			[self.surfaceX.x, self.surfaceY.x, -self.r.x],
+			[self.surfaceX.y, self.surfaceY.y, -self.r.y],
+			[self.surfaceX.z, self.surfaceY.z, -self.r.z]
+		])
+		o = np.array([[self.start.x], [self.start.y], [self.start.z]])
+		r = rmat.I * o
+		return Vec2(r[0], r[1])
+
+	def findBounds(self):
+		# Get 2D coordinates of edges of the screen
+		points = [
+			(        0, IMG_HEIGHT),
+			(        0,          0),
+			(IMG_WIDTH,          0),
+			(IMG_WIDTH, IMG_HEIGHT)
+		]
+		points = map(self.surfaceMapSingle, points)
+		bl, tl, tr, br = points
+
+		# Find bounds and adjust
+		bl.x = max(bl.x, tl.x)
+		tl.x = max(bl.x, tl.x)
+		tr.x = min(tr.x, br.x)
+		br.x = min(tr.x, br.x)
+		tl.y = max(tl.y, tr.y)
+		tr.y = max(tl.y, tr.y)
+		bl.y = min(bl.y, br.y)
+		br.y = min(bl.y, br.y)
+
+		xoffset = self.framex * abs(bl.x - br.x)
+		yoffset = self.framey * abs(bl.y - tl.y)
+		bloffset = Vec2(xoffset, -yoffset)
+		troffset = Vec2(-xoffset, yoffset)
+
+		return bl + bloffset, tr + troffset
+
+	def mapPicture(self, points):
+		# Fit picture space into the bounds of the surface
+		bl, tr = self.findBounds()
+		width, height = abs(bl.x - tr.x), abs(bl.y - tr.y)
+		if float(width) / height > float(PIC_WIDTH) / PIC_HEIGHT:
+			width = height * (PIC_WIDTH / PIC_HEIGHT)
+		else:
+			height = width * (PIC_HEIGHT / PIC_WIDTH)
+		tr = bl + Vec2(width, -height)
+
+		# Convert pixel points into surface coordinates
+		for i in range(len(points)):
+			x, y = points[i]
+			x, y = bl.x + x * width / PIC_WIDTH, bl.y - (PIC_HEIGHT - y) * height / PIC_HEIGHT
+			points[i] = Vec2(x, y)
+
+		return points
