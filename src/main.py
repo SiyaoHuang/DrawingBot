@@ -15,8 +15,6 @@ target = Vec2(0.0, 0.0)
 c.bot.forward(c.fspeed)
 c.P = 50000
 while True:
-                        
-                        
 			# Get direction vector to target
 			c.setVector()
 			targetDirection = (target - c.position).normalize()

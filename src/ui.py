@@ -6,7 +6,7 @@ from controller import *
 
 os.putenv('SDL_VIDEODRIVER', 'fbcon') # Display on piTFT
 os.putenv('SDL_FBDEV', '/dev/fb1')
-os.putenv('SDL_MOUSEDRV', 'TSLIB')    #Track mouse clicks
+os.putenv('SDL_MOUSEDRV', 'TSLIB')    # Track mouse clicks
 os.putenv('SDL_MOUSEDEV', '/dev/input/touchscreen')
 
 # timer
@@ -31,7 +31,7 @@ my_font = pygame.font.Font(None, 25)
 
 distance = 62
 
-sqr_surface = my_font.render("Square", True, black)
+sqr_surface = my_font.render("Clear", True, black)
 sqr_pos = sqr_x, left_y = 280, 40
 sqr_rect = sqr_surface.get_rect(center=sqr_pos)
 
@@ -48,78 +48,66 @@ redo_pos = redo_x, redo_y = 290, 40 + 3*distance
 redo_rect = redo_surface.get_rect(center=redo_pos)
 
 show_buttons = True 
-##my_font = pygame.font.Font(None, 50)
-##WHITE = 255, 255, 255
-##my_text, text_pos = 'quit', (80,180)
-##text_surface = my_font.render(my_text, True, WHITE)
-##rect = text_surface.get_rect(center=text_pos)
-##
-##text_coords = ""
-##text_surface_coords = my_font.render(text_coords, True, WHITE)
-##text_coords_rect = text_surface_coords.get_rect(center=(160, 120))
 points = []
 pointsredo = []
 start = time.time()
 c = Controller()
 timer = 0
 while True:
-    if not GPIO.input(17):
-        points = [ (30,30) , (30, 210), (210,210), (210,30),(30,30)]
-        pointsredo = []
-        time.sleep(0.2)
-    if not GPIO.input(22):
-        break
-    if not GPIO.input(23):
-        if points != []:
-            pointsredo = [points[0]] + pointsredo
-            del points[0]
-        time.sleep(0.2)
-    if not GPIO.input(27):
-        if pointsredo != []:
-            points = [pointsredo[0]] + points
-            del pointsredo[0]
-        time.sleep(0.2)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            sys.exit()
-        if event.type == pygame.MOUSEBUTTONUP:
-            show_buttons = False
-            timer = 100
-            x, y = pygame.mouse.get_pos()
-            dist = 20
-            for i in points:
-                xi, yi = i
-                if ((xi - x)**2 + (yi - y)**2)**.5 < dist:
-                    x, y = xi, yi
-                    break
-            points = [(x, y)] + points
-            pointsredo = []
-            print x, y
-    
-    if not show_buttons:
-        if timer == 0:
-            show_buttons = True
-        timer -= 1
+	if not GPIO.input(17):
+		#points = [ (30,30) , (30, 210), (210,210), (210,30),(30,30)]
+		#pointsredo = []
+		points = []
+		pointsredo = []
+		time.sleep(0.2)
+	if not GPIO.input(22):
+		break
+	if not GPIO.input(23):
+		if points != []:
+			pointsredo = [points[0]] + pointsredo
+			del points[0]
+		time.sleep(0.2)
+	if not GPIO.input(27):
+		if pointsredo != []:
+			points = [pointsredo[0]] + points
+			del pointsredo[0]
+		time.sleep(0.2)
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			sys.exit()
+		if event.type == pygame.MOUSEBUTTONUP:
+			show_buttons = False
+			timer = 100
+			x, y = pygame.mouse.get_pos()
+			dist = 20
+			for i in points:
+				xi, yi = i
+				if ((xi - x)**2 + (yi - y)**2)**.5 < dist:
+					x, y = xi, yi
+					break
+			points = [(x, y)] + points
+			pointsredo = []
+			print x, y
+	
+	if not show_buttons:
+		if timer == 0:
+			show_buttons = True
+		timer -= 1
 
-    screen.fill(white)
-    for i in points:
-        pygame.draw.circle(screen, black, i, 2)
-    if len(points) > 1:
-        pygame.draw.lines(screen, black, False, points, 2)
-        
-    if show_buttons:
-        screen.blit(sqr_surface, sqr_rect)
-        screen.blit(done_surface, done_rect)
-        screen.blit(undo_surface, undo_rect)
-        screen.blit(redo_surface, redo_rect)
-    pygame.display.flip()
-    
+	screen.fill(white)
+	for i in points:
+		pygame.draw.circle(screen, black, i, 2)
+	if len(points) > 1:
+		pygame.draw.lines(screen, black, False, points, 2)
+		
+	if show_buttons:
+		screen.blit(sqr_surface, sqr_rect)
+		screen.blit(done_surface, done_rect)
+		screen.blit(undo_surface, undo_rect)
+		screen.blit(redo_surface, redo_rect)
+	pygame.display.flip()
 
-    time.sleep(0.01)
-
-
-for i in points[::-1]:
-    print i
+	time.sleep(0.01)
 
 c.drawPoints(points[::-1])
 

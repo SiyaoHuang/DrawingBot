@@ -93,7 +93,7 @@ class VirtualBotRX(object):
 	def getCommand(self):
 		line = self.s.recv(50)
 		if line == '':
-			sys.exit(0)
+			return None
 		cmd, arg = line.split()
 		return int(cmd), float(arg)
 
@@ -139,4 +139,8 @@ class VirtualBotRX(object):
 	def run(self):
 		while True:
 			cmd = self.getCommand()
+			if cmd == None:
+				self.bot.stop()
+				print "Connection closed..."
+				return
 			self.execute(cmd)

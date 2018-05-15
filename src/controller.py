@@ -53,7 +53,7 @@ class Controller(object):
 		self.bot.penUp(self.upspeed)
 	
 	def calibrateRoutine(self):
-                if self.calibrated:
+		if self.calibrated:
 			print "Skipping calibration."
 			return
 
@@ -69,26 +69,19 @@ class Controller(object):
 		
 		# move in a box
 		for i in range(8):
-                    self.bot.forward(self.fspeed)
-                    starttime = time.time()
-		    while time.time() - starttime < 1.1:
-                            points = self.imageprocessor.getPoints()
-			    if points != None:
-                                p1, p2, p3 = points
-                                self.pmap.addCalibration(p1, p2, p3)
-			    
-                    self.bot.rotate(-self.rspeed)
-                    time.sleep(0.8)
-##                    starttime = time.time()
-##		    while time.time() - starttime < 0.9:
-##                            points = self.imageprocessor.getPoints()
-##			    if points != None:
-##                                p1, p2, p3 = points
-##                                self.pmap.addCalibration(p1, p2, p3)
-                
-                self.bot.stop()
-                
-                # Set surface normal
+			self.bot.forward(self.fspeed)
+			starttime = time.time()
+			while time.time() - starttime < 1.1:
+				points = self.imageprocessor.getPoints()
+				if points != None:
+					p1, p2, p3 = points
+					self.pmap.addCalibration(p1, p2, p3)
+
+			self.bot.rotate(-self.rspeed)
+			time.sleep(0.8)
+		self.bot.stop()
+
+		# Set surface normal
 		self.pmap.calibrateSurfaceNormal()
 		self.pmap.initSurface(p1i, p2i, p3i)
 		print self.pmap.surfaceNormal
@@ -145,7 +138,7 @@ class Controller(object):
 			self.bot.rotate(-self.rspeed)
 			starttime = time.time()
 			while time.time() - starttime < 1:
-                                p1, p2, p3 = points
+				p1, p2, p3 = points
 				self.pmap.addCalibration(p1, p2, p3)
 				points = self.imageprocessor.getPoints()
 				while points == None:
@@ -221,7 +214,7 @@ class Controller(object):
 		self.setVector()
 		targetDirection = (target - self.position).normalize()
 		while math.acos(self.direction * targetDirection) > self.epst or targetDirection.cross(self.direction) < 0:
-                        self.bot.rotate(self.rspeed)
+			self.bot.rotate(self.rspeed)
 			self.setVector()
 			targetDirection = (target - self.position).normalize()
 
@@ -241,10 +234,10 @@ class Controller(object):
 		# Move towards target point
 		flag = False
 		while self.position.dist_to(target) > self.epsxy:
-                        if not flag:
-                            self.bot.forward(self.fspeed)
-                            flag = True
-                        
+			if not flag:
+				self.bot.forward(self.fspeed)
+				flag = True
+
 			# Get direction vector to target
 			self.setVector()
 			targetDirection = (target - self.position).normalize()

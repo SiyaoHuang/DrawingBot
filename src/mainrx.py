@@ -1,4 +1,11 @@
 from wireless import *
+import time
 
-bot = VirtualBotRX()
-bot.run()
+while True:
+	time.sleep(3)
+	try:
+		bot = VirtualBotRX()
+	except socket.error:
+		continue
+
+	bot.run()

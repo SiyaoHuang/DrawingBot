@@ -3,12 +3,12 @@ import numpy as np
 from numpy.linalg import inv
 
 # constants
-TRIANGLE_UNITS	= 1.0
+TRIANGLE_UNITS  = 1.0
 DISTANCE_TO_CAM = 14.625
-P2U				= 15.0 / 361.411
-DISTANCE_MAX	= 100.0
-IMG_WIDTH		= 416
-IMG_HEIGHT		= 320
+P2U             = 15.0 / 361.411
+DISTANCE_MAX    = 100.0
+IMG_WIDTH       = 416
+IMG_HEIGHT      = 320
 PIC_WIDTH       = 320
 PIC_HEIGHT      = 240
 
