@@ -111,7 +111,3 @@ class Bot(object):
 	def stop(self):
 		self.leftServo.stop()
 		self.rightServo.stop()
-
-	def cleanup(self):
-		self.penServo.pwm.stop()
-		GPIO.cleanup()
