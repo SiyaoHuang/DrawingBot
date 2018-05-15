@@ -91,8 +91,11 @@ class VirtualBotRX(object):
 		print 'Connected to Pi!'
 
 	def connect(self, ip, port):
-		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.s.connect((ip, port))
+		try:
+			self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.s.connect((ip, port))
+		except:
+			raise
 
 	def getCommand(self):
 		line = self.s.recv(50)
