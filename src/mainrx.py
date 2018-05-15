@@ -5,7 +5,6 @@ while True:
 	time.sleep(3)
 	try:
 		bot = VirtualBotRX()
+		bot.run()
 	except socket.error:
-		continue
-
-	bot.run()
+		print 'Trying to connect...'
