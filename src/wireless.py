@@ -141,6 +141,7 @@ class VirtualBotRX(object):
 			cmd = self.getCommand()
 			if cmd == None:
 				self.bot.stop()
+				self.bot.cleanup()
 				print "Connection closed..."
 				return
 			self.execute(cmd)
