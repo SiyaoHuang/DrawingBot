@@ -32,7 +32,7 @@ my_font = pygame.font.Font(None, 25)
 distance = 62
 
 sqr_surface = my_font.render("Clear", True, black)
-sqr_pos = sqr_x, left_y = 280, 40
+sqr_pos = sqr_x, left_y = 290, 40
 sqr_rect = sqr_surface.get_rect(center=sqr_pos)
 
 done_surface = my_font.render("Done", True, black)
