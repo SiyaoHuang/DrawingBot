@@ -22,24 +22,25 @@ class Controller(object):
 		self.direction = None
 		self.epsxy = 1.75
 		self.epst = 45 * (2 * 3.141592 / 360)
-		self.epss = 0.02
+		self.epss = 0.03
 
 		# Calibrate fields
 		self.framex = 0.20
 		self.framey = 0.20
 		self.calibrated = False
+		self.P = 49200
 
 		# Bot parameters
 		self.rspeed = -0.2
 		self.raspeed = -0.35
-		self.fspeed = 0.4
+		self.fspeed = 0.3
 		self.pspeed = 0.1
 		self.upspeed = 0.15
 		self.dnspeed = -0.2
-		self.rtrim = -0.03
+		self.rtrim = -0.02
 		self.ltrim = 0
 		self.pdsleep = 0.4
-		self.pusleep = 0.62
+		self.pusleep = 0.85
 		self.setupBot()
 
 	# Sets initial parameters of the bot
@@ -50,6 +51,51 @@ class Controller(object):
 		self.bot.penUpSleep(self.pusleep)
 		self.bot.penDown(self.dnspeed)
 		self.bot.penUp(self.upspeed)
+	
+	def calibrateRoutine(self):
+                if self.calibrated:
+			print "Skipping calibration."
+			return
+
+		print "Establishing start position..."
+		start = self.imageprocessor.getPoints()
+		while start == None:
+			start = self.imageprocessor.getPoints()
+		p1i, p2i, p3i = start
+		print start
+
+		# Calibrate surface normal
+		print "Calibrating surface normal..."
+		
+		# move in a box
+		for i in range(8):
+                    self.bot.forward(self.fspeed)
+                    starttime = time.time()
+		    while time.time() - starttime < 1.1:
+                            points = self.imageprocessor.getPoints()
+			    if points != None:
+                                p1, p2, p3 = points
+                                self.pmap.addCalibration(p1, p2, p3)
+			    
+                    self.bot.rotate(-self.rspeed)
+                    time.sleep(0.8)
+##                    starttime = time.time()
+##		    while time.time() - starttime < 0.9:
+##                            points = self.imageprocessor.getPoints()
+##			    if points != None:
+##                                p1, p2, p3 = points
+##                                self.pmap.addCalibration(p1, p2, p3)
+                
+                self.bot.stop()
+                
+                # Set surface normal
+		self.pmap.calibrateSurfaceNormal()
+		self.pmap.initSurface(p1i, p2i, p3i)
+		print self.pmap.surfaceNormal
+
+		# Set starting position
+		self.position, self.direction = self.pmap.surfaceMap(p1i, p2i, p3i)
+		self.calibrated = True
 
 	# Determines the plane of the paper in 3D space
 	def calibrate(self):
@@ -87,8 +133,8 @@ class Controller(object):
 
 			# Keep going forward until a boundary is hit
 			self.bot.forward(self.fspeed)
-			time.sleep(0.9)
-			while inBoundary(points):
+			starttime = time.time()
+			while time.time() - starttime < 0.9 or inBoundary(points):
 				p1, p2, p3 = points
 				self.pmap.addCalibration(p1, p2, p3)
 				points = self.imageprocessor.getPoints()
@@ -97,7 +143,13 @@ class Controller(object):
 
 			# Rotate for some time
 			self.bot.rotate(-self.rspeed)
-			time.sleep(1)
+			starttime = time.time()
+			while time.time() - starttime < 1:
+                                p1, p2, p3 = points
+				self.pmap.addCalibration(p1, p2, p3)
+				points = self.imageprocessor.getPoints()
+				while points == None:
+					points = self.imageprocessor.getPoints()
 
 			hit += 1
 
@@ -168,8 +220,8 @@ class Controller(object):
 		# Rotate bot towards the target
 		self.setVector()
 		targetDirection = (target - self.position).normalize()
-		self.bot.rotate(self.rspeed)
-		while math.acos(self.direction * targetDirection) > self.epst:
+		while math.acos(self.direction * targetDirection) > self.epst or targetDirection.cross(self.direction) < 0:
+                        self.bot.rotate(self.rspeed)
 			self.setVector()
 			targetDirection = (target - self.position).normalize()
 
@@ -187,23 +239,24 @@ class Controller(object):
 			self.bot.penUp(self.upspeed)
 
 		# Move towards target point
-		self.bot.forward(self.fspeed)
+		flag = False
 		while self.position.dist_to(target) > self.epsxy:
-
+                        if not flag:
+                            self.bot.forward(self.fspeed)
+                            flag = True
+                        
 			# Get direction vector to target
 			self.setVector()
 			targetDirection = (target - self.position).normalize()
 			
 			# Calculate error
 			angle = math.acos(targetDirection * self.direction)
-			self.setVector()
 			sign = 1 if targetDirection.cross(self.direction) < 0 else -1
-			err = sign * angle
-			scale = 13500
-			att = min(self.position.dist_to(target), 4)
+			scale = self.P
+			att = self.position.dist_to(target)
 
 			# Adjust trajectory based on error
-			self.bot.adjust(scale * att * err)
+			self.bot.adjust(sign * scale * angle)
 
 		# Move towards target in small increments until just passed
 		while targetDirection * self.direction > 0:
@@ -216,12 +269,16 @@ class Controller(object):
 
 	def drawPoints(self, points):
 		# Calibrate pmap for the surface normal
-		self.calibrate()
+		self.calibrateRoutine()
 		
 		# Convert points
 		points = self.pmap.mapPicture(points)
 
 		# Draw points one by one
-		self.gotoTarget(Vec2(points[0][0], points[0][1]))
+		self.gotoTarget(points[0])
+		self.gotoTarget(points[0])
 		for i in range(1, len(points)):
-			self.gotoTarget(Vec2(points[i][0], points[i][1]), draw=True)
+			self.gotoTarget(points[i], draw=True)
+		
+		# Put the pen back up
+		self.bot.penUp(self.upspeed)
