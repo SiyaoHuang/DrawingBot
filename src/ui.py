@@ -55,13 +55,11 @@ c = Controller()
 timer = 0
 while True:
 	if not GPIO.input(17):
-		#points = [ (30,30) , (30, 210), (210,210), (210,30),(30,30)]
-		#pointsredo = []
 		points = []
 		pointsredo = []
 		time.sleep(0.2)
 	if not GPIO.input(22):
-		break
+		c.drawPoints(points[::-1])
 	if not GPIO.input(23):
 		if points != []:
 			pointsredo = [points[0]] + pointsredo
@@ -108,8 +106,6 @@ while True:
 	pygame.display.flip()
 
 	time.sleep(0.01)
-
-c.drawPoints(points[::-1])
 
 GPIO.cleanup()
 sys.exit()

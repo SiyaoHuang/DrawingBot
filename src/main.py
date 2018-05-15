@@ -3,8 +3,6 @@ import time
 import sys
 
 c = Controller()
-time.sleep(2)
-c.bot.penDown(c.dnspeed)
 sys.exit(0)
 # Move towards target point
 print 'calibrating...'

@@ -33,14 +33,14 @@ class Controller(object):
 		# Bot parameters
 		self.rspeed = -0.2
 		self.raspeed = -0.35
-		self.fspeed = 0.3
+		self.fspeed = 0.35
 		self.pspeed = 0.1
-		self.upspeed = 0.15
+		self.upspeed = 0.2
 		self.dnspeed = -0.2
 		self.rtrim = -0.02
 		self.ltrim = 0
 		self.pdsleep = 0.4
-		self.pusleep = 0.85
+		self.pusleep = 1
 		self.setupBot()
 
 	# Sets initial parameters of the bot
