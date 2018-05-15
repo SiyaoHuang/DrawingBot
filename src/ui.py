@@ -35,6 +35,9 @@ sqr_surface = my_font.render("Clear", True, black)
 sqr_pos = sqr_x, left_y = 290, 40
 sqr_rect = sqr_surface.get_rect(center=sqr_pos)
 
+sq_surface = my_font.render("Quit", True, black)
+sq_rect = sq_surface.get_rect(center=sqr_pos)
+
 done_surface = my_font.render("Done", True, black)
 done_pos = done_x, done_y = 290, 40 + distance
 done_rect = done_surface.get_rect(center=done_pos)
@@ -55,6 +58,8 @@ c = Controller()
 timer = 0
 while True:
 	if not GPIO.input(17):
+                if points == []:
+                    break
 		points = []
 		pointsredo = []
 		time.sleep(0.2)
@@ -99,7 +104,10 @@ while True:
 		pygame.draw.lines(screen, black, False, points, 2)
 		
 	if show_buttons:
-		screen.blit(sqr_surface, sqr_rect)
+                if points == []:
+                        screen.blit(sq_surface, sq_rect)
+                else:
+		        screen.blit(sqr_surface, sqr_rect)
 		screen.blit(done_surface, done_rect)
 		screen.blit(undo_surface, undo_rect)
 		screen.blit(redo_surface, redo_rect)
