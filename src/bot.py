@@ -1,3 +1,7 @@
+# bot.py
+#
+# Handles controlling all bot movement.
+
 import pigpio
 import RPi.GPIO as GPIO
 import time

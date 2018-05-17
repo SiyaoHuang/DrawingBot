@@ -1,3 +1,8 @@
+# controller.py
+#
+# Main controller that uses the image processor and perspective
+# mapping to control the bot via the wireless module.
+
 import pmap
 from pmap import *
 import wireless

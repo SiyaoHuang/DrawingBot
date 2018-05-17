@@ -1,3 +1,7 @@
+# pmath.py
+#
+# Provides vector math functions for perspective mapping
+
 class Vec3(object):
 	def __init__(self, x, y, z):
 		self.x = float(x)

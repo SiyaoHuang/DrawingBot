@@ -1,3 +1,7 @@
+# wireless.py
+#
+# Wireless interface for the bot.
+
 import socket
 from bot import *
 import sys

@@ -1,3 +1,7 @@
+# pmap.py
+#
+# Perspective mapping from screen coordinates to surface coordinates
+
 from pmath import *
 import numpy as np
 from numpy.linalg import inv

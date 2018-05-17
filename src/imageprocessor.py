@@ -1,3 +1,8 @@
+# imageprocessor.py
+#
+# Image processing to determine location of three circles on the screen
+# in pixel coordinates.
+
 import cv2
 import numpy as np
 from picamera.array import PiRGBArray
